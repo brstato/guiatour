@@ -69,11 +69,12 @@ class AccountService {
      * Atualiza configurações de marketing e analytics.
      * @param data IDs de rastreamento e tags.
      */
-    async updateConfiguracoesAvancadas(data: { g_analytcs?: string; meta_pixel_id?: string; conta_google_ads?: string }): Promise<any> {
+    async updateConfiguracoesAvancadas(data: { g_analytcs?: string; meta_pixel_id?: string; conta_google_ads?: string; horario?: any }): Promise<any> {
         const payload = {
             g_analytcs: data.g_analytcs ?? "",
             meta_pixel_id: data.meta_pixel_id ?? "",
             conta_google_ads: data.conta_google_ads ?? "",
+            horario: data.horario ?? {},
         };
         const response = await api.post('account/update_configuracoes_avancadas', payload);
         return response.data;

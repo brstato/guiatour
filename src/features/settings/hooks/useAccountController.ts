@@ -116,12 +116,13 @@ export function useAccountController() {
      * Atualiza as configurações avançadas de marketing.
      * @param updateData IDs de Analytics, Pixel e Ads.
      */
-    const handleUpdateConfiguracoesAvancadas = async (updateData: { g_analytcs?: string; meta_pixel_id?: string; conta_google_ads?: string }) => {
+    const handleUpdateConfiguracoesAvancadas = async (updateData: { g_analytcs?: string; meta_pixel_id?: string; conta_google_ads?: string; horario?: any }) => {
         const mergedData = data ? {
             ...data,
             ...(updateData.g_analytcs !== undefined && { g_analytcs: updateData.g_analytcs }),
             ...(updateData.meta_pixel_id !== undefined && { meta_pixel_id: updateData.meta_pixel_id }),
-            ...(updateData.conta_google_ads !== undefined && { conta_google_ads: updateData.conta_google_ads })
+            ...(updateData.conta_google_ads !== undefined && { conta_google_ads: updateData.conta_google_ads }),
+            ...(updateData.horario !== undefined && { horario: updateData.horario })
         } : updateData;
 
         setData(mergedData as AccountData);

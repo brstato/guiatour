@@ -72,6 +72,17 @@ export interface AccountData {
     horario: Record<string, any>;
 }
 
+export interface PosTattooItem {
+    id_item: number;
+    descricao: string;
+}
+
+export interface CuidadoItem {
+    id_item: number;
+    id_site: number;
+    descricao: string;
+}
+
 export interface PortfolioData {
     id_site: number;
     titulo: string;
@@ -84,4 +95,6 @@ export interface PortfolioData {
         id_foto: number;
         url_foto: string;
     }>;
+    pos_tattoo?: PosTattooItem[];
+    cuidados?: CuidadoItem[];
 }

@@ -190,6 +190,15 @@ export function useAuthController() {
     }
   });
 
+  /**
+   * Lida com o processo de logout.
+   * Limpa os tokens e redireciona para a página de login.
+   */
+  const handleLogout = () => {
+    clearPersistentTokens();
+    navigate('/');
+  };
+
   return {
     isLoading,
     error,
@@ -199,6 +208,7 @@ export function useAuthController() {
     handleLogin,
     handleForgotPassword,
     handleLoginGoogle,
+    handleLogout,
   };
 }
 

@@ -108,6 +108,24 @@ class PortfolioService {
         const response = await api.post('portfolio/remove', { id_foto: idFoto });
         return response.data;
     }
+
+    /**
+     * Atualiza um item de cuidados pós tattoo.
+     * @param payload Dados do item (id_item, id_site, descricao).
+     */
+    async updatePosTattoo(payload: { id_item: number; id_site: number; descricao: string }): Promise<any> {
+        const response = await api.post('portfolio/update_pos_tattoo', payload);
+        return response.data;
+    }
+
+    /**
+     * Remove um item de cuidados pós tattoo.
+     * @param idCuidado ID do cuidado a ser removido.
+     */
+    async removeCuidado(idCuidado: number): Promise<any> {
+        const response = await api.post('portfolio/remove-cuidado', { id_cuidado: idCuidado });
+        return response.data;
+    }
 }
 
 export const portfolioService = new PortfolioService();
