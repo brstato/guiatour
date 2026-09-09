@@ -1,3 +1,39 @@
+# Resolução de Problemas no Upload de Fotos (Front-end)
+
+Este guia detalha a solução para o front-end (TypeScript) referente aos problemas de upload de imagens enfrentados por usuários de iPhone.
+
+## O Problema
+
+A falha no envio ocorre por dois motivos principais no ambiente iOS:
+
+1. **Formato Incompatível:** Dispositivos Apple salvam fotos no formato HEIC/HEIF por padrão. O construtor nativo `new Image()` do Safari frequentemente falha ao tentar carregar esse formato diretamente.
+
+2. **Estouro de Memória (Crash):** Tentar converter arquivos brutos de 15 a 25 MB diretamente para Base64 antes da compressão esgota a memória da aba do navegador no celular, causando travamentos.
+
+## Solução Implementada
+
+Para resolver isso, vamos:
+
+1. Interceptar a imagem diretamente como um objeto `File`.
+
+2. Converter o formato `.heic` nativamente no front-end.
+
+3. Usar `URL.createObjectURL` (que aponta para a memória sem duplicar o arquivo em texto) para carregar e comprimir a imagem via Canvas.
+
+### Passo 1: Instalar a dependência
+
+No diretório do seu projeto front-end, instale a biblioteca de conversão:
+
+```
+npm install heic2any
+
+```
+
+### Passo 2: Atualizar o utilitário `image-utils.ts`
+
+Substitua a antiga função `compressImage` pelo código abaixo. Esta nova versão recebe o arquivo físico e faz o gerenciamento seguro da memória.
+
+```
 import heic2any from 'heic2any';
 
 /**
@@ -79,7 +115,7 @@ export async function processAndCompressImage(
             resolve(compressedBase64);
         };
 
-        img.onerror = () => {
+        img.onerror = (error) => {
             // Garante a liberação de memória mesmo em caso de erro
             URL.revokeObjectURL(objectUrl);
             reject(new Error('Falha ao processar e carregar a imagem no Canvas.'));
@@ -87,59 +123,6 @@ export async function processAndCompressImage(
     });
 }
 
-/**
- * Comprime uma imagem usando Canvas API a partir de Base64 (legado).
- * @deprecated Utilize `processAndCompressImage` com o objeto File diretamente.
- * @param base64 String base64 da imagem original.
- * @param maxWidth Largura máxima permitida.
- * @param maxHeight Altura máxima permitida.
- * @param quality Qualidade da compressão (0.0 a 1.0).
- * @returns Promise com a string base64 comprimida.
- */
-export async function compressImage(
-    base64: string,
-    maxWidth: number = 1920,
-    maxHeight: number = 1080,
-    quality: number = 0.7
-): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = base64.startsWith('data:') ? base64 : `data:image/jpeg;base64,${base64}`;
+```
 
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let width = img.width;
-            let height = img.height;
-
-            // Redimensionamento proporcional
-            if (width > height) {
-                if (width > maxWidth) {
-                    height *= maxWidth / width;
-                    width = maxWidth;
-                }
-            } else {
-                if (height > maxHeight) {
-                    width *= maxHeight / height;
-                    height = maxHeight;
-                }
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                reject(new Error('Não foi possível obter o contexto do canvas'));
-                return;
-            }
-
-            ctx.drawImage(img, 0, 0, width, height);
-
-            // Exporta como JPEG com a qualidade desejada
-            const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
-            resolve(compressedBase64);
-        };
-
-        img.onerror = (error) => reject(error);
-    });
-}
+### 
