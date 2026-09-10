@@ -4,6 +4,7 @@ import { useAccountController } from '@/features/settings/hooks/useAccountContro
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { processAndCompressImage } from "@/lib/image-utils";
 import {
     ExternalLink,
     Plus,
@@ -311,13 +312,23 @@ export function PortfolioPage() {
         const file = event.target.files?.[0];
         if (!file || !portfolio?.id_site) return;
 
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-            const base64String = reader.result as string;
+        /*        const reader = new FileReader();
+                reader.onloadend = async () => {
+                    const base64String = reader.result as string;
+                    await uploadFile(type, file.name, base64String, portfolio.id_site);
+                    event.target.value = '';
+                };
+                reader.readAsDataURL(file); */
+
+        try {
+            const base64String = await processAndCompressImage(file);
             await uploadFile(type, file.name, base64String, portfolio.id_site);
+        } catch (error) {
+            console.error('Erro ao processar/enviar imagem:', error);
+            alert('Não foi possível enviar essa imagem. Tente outra foto ou tire uma nova.');
+        } finally {
             event.target.value = '';
-        };
-        reader.readAsDataURL(file);
+        }
     };
 
     useEffect(() => {

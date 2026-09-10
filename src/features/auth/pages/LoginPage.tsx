@@ -37,7 +37,7 @@ export function LoginPage() {
           <div className="w-20 h-20 bg-orange-500/10 rounded-[2rem] flex items-center justify-center mb-4">
             <Feather className="w-10 h-10 text-orange-500" />
           </div>
-          <h1 className="text-white text-[22px] font-medium tracking-tight">Inkers</h1>
+          <h1 className="text-white text-[22px] font-medium tracking-tight">INKERS</h1>
           <p className="text-slate-400 text-center mt-2 max-w-[280px] leading-relaxed text-sm">
             Sua página profissional de tatuador, sempre à mão.
           </p>
