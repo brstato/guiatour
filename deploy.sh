@@ -4,7 +4,7 @@
 # Altere estes valores de acordo com seu servidor
 SERVER_USER="bruno"
 SERVER_IP="100.72.176.93" # Endereço IP da máquina (Tailscale/Local)
-DEST_DIR="/home/bruno/inkers/pages"
+DEST_DIR="/home/bruno/guiatour/pages"
 # ---------------------
 
 echo "🚀 Iniciando build do projeto..."

@@ -87,9 +87,9 @@ export function usePortfolioController() {
         let base64ToProcess = base64;
 
         try {
-            // Aplica compressão "média pesada": 1600x1600, 0.7 de qualidade
-            // Isso garante que todos os tipos de upload sejam comprimidos
-            base64ToProcess = await compressImage(base64, 1600, 1600, 0.7);
+            // Aplica compressão: 800x800 para avatar/bio, 1600x1600 para outros
+            const maxDim = (type === 'avatar' || type === 'bio') ? 800 : 1600;
+            base64ToProcess = await compressImage(base64, maxDim, maxDim, 0.7);
         } catch (error) {
             console.error("Erro ao comprimir imagem no controller:", error);
         }
@@ -97,22 +97,30 @@ export function usePortfolioController() {
         // Atualização Otimista (Optimistic Update)
         const previewUrl = base64ToProcess.startsWith('data:') ? base64ToProcess : `data:image/jpeg;base64,${base64ToProcess}`;
         if (type === 'avatar') {
-            setData(prev => prev ? { ...prev, avatar: previewUrl } : null);
+            setData(prev => ({ ...(prev || {}), avatar: previewUrl } as PortfolioData));
         } else if (type === 'bio') {
-            setData(prev => prev ? { ...prev, foto_bio: previewUrl } : null);
+            setData(prev => ({ ...(prev || {}), foto_bio: previewUrl } as PortfolioData));
         } else if (type === 'capa') {
-            setData(prev => prev ? { ...prev, foto_capa: previewUrl } : null);
+            setData(prev => ({ ...(prev || {}), foto_capa: previewUrl } as PortfolioData));
         } else if (type === 'gallery') {
             setData(prev => {
-                if (!prev) return null;
                 const newItem = {
                     id_foto: Date.now(), // ID temporário para chave React
                     url_foto: previewUrl,
                     id_site: idSite
                 };
+                const currentData = prev || {
+                    id_site: idSite,
+                    titulo: '',
+                    subtitulo: '',
+                    bio: '',
+                    avatar: '',
+                    foto_bio: '',
+                    itens: []
+                };
                 return {
-                    ...prev,
-                    itens: [...(prev.itens || []), newItem]
+                    ...currentData,
+                    itens: [...(currentData.itens || []), newItem]
                 };
             });
         }
@@ -121,6 +129,8 @@ export function usePortfolioController() {
             // Remove o prefixo "data:image/...;base64," antes de enviar para a API
             const base64Data = base64ToProcess.includes(',') ? base64ToProcess.split(',')[1] : base64ToProcess;
             const payload = { nome_arquivo: fileName, imagem_base64: base64Data, id_site: idSite };
+
+            console.log(`Iniciando upload de ${type} para id_site: ${idSite}`);
 
             if (type === 'avatar') await portfolioService.uploadAvatar(payload);
             else if (type === 'bio') await portfolioService.uploadBioFoto(payload);
@@ -135,8 +145,13 @@ export function usePortfolioController() {
             console.error(`Erro no upload de ${type}:`, error);
             // Reverte em caso de erro
             const idLoja = localStorage.getItem("id") || "";
-            const result = await portfolioService.getPortfolioData(idLoja);
-            setData(result);
+            try {
+                const result = await portfolioService.getPortfolioData(idLoja);
+                setData(result);
+            } catch (reError) {
+                console.error("Erro ao reverter dados:", reError);
+            }
+            throw error;
         }
     };
 
@@ -166,106 +181,6 @@ export function usePortfolioController() {
         }
     };
 
-    /**
-     * Adiciona um novo item vazio de cuidados pós tattoo na interface.
-     */
-    const handleAddPosTattoo = () => {
-        setData(prev => {
-            if (!prev) return null;
-            return {
-                ...prev,
-                cuidados: [...(prev.cuidados || []), { id_item: 0, id_site: prev.id_site, descricao: "" }]
-            };
-        });
-    };
-
-    /**
-     * Salva ou atualiza um item de cuidados pós tattoo.
-     * @param idItem ID do item (0 para novo).
-     * @param descricao Texto do cuidado.
-     */
-    const handleUpdatePosTattoo = async (idItem: number, descricao: string) => {
-        if (!data?.id_site) return;
-
-        // Atualização Otimista
-        setData(prev => {
-            if (!prev) return null;
-            return {
-                ...prev,
-                cuidados: (prev.cuidados || []).map(item =>
-                    item.id_item === idItem ? { ...item, descricao } : item
-                )
-            };
-        });
-
-        try {
-            const result = await portfolioService.updatePosTattoo({
-                id_item: idItem,
-                id_site: data.id_site,
-                descricao
-            });
-
-            // Se for um novo item, atualiza o ID temporário (0) pelo ID real do banco
-            if (result?.id_item && idItem === 0) {
-                setData(prev => {
-                    if (!prev) return null;
-                    // Encontra o primeiro item com id 0 e mesma descrição para atualizar
-                    let found = false;
-                    return {
-                        ...prev,
-                        cuidados: (prev.cuidados || []).map(item => {
-                            if (!found && item.id_item === 0 && item.descricao === descricao) {
-                                found = true;
-                                return { ...item, id_item: result.id_item };
-                            }
-                            return item;
-                        })
-                    };
-                });
-            }
-        } catch (error) {
-            console.error("Erro ao salvar cuidado pós tattoo:", error);
-            // Em caso de erro crítico, recarrega para garantir consistência
-            const idLoja = localStorage.getItem("id") || "";
-            await loadData(idLoja);
-        }
-    };
-
-    /**
-     * Remove um item de cuidados pós tattoo.
-     * @param idItem ID do item a ser removido.
-     */
-    const handleDeleteCuidado = async (idItem: number) => {
-        if (idItem === 0) {
-            // Se for um item novo não salvo, apenas remove da lista local
-            setData(prev => {
-                if (!prev) return null;
-                return {
-                    ...prev,
-                    cuidados: (prev.cuidados || []).filter(item => item.id_item !== 0)
-                };
-            });
-            return;
-        }
-
-        // Atualização Otimista
-        setData(prev => {
-            if (!prev) return null;
-            return {
-                ...prev,
-                cuidados: (prev.cuidados || []).filter(item => item.id_item !== idItem)
-            };
-        });
-
-        try {
-            await portfolioService.removeCuidado(idItem);
-        } catch (error) {
-            console.error("Erro ao remover cuidado pós tattoo:", error);
-            const idLoja = localStorage.getItem("id") || "";
-            await loadData(idLoja);
-        }
-    };
-
     return {
         isLoading,
         data,
@@ -273,9 +188,6 @@ export function usePortfolioController() {
         handleUpdate,
         handleUpdateBasico,
         handleUpload,
-        handleDeleteFoto,
-        handleAddPosTattoo,
-        handleUpdatePosTattoo,
-        handleDeleteCuidado
+        handleDeleteFoto
     };
 }

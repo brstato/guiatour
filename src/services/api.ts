@@ -8,13 +8,13 @@ import axios from "axios";
  * Define a URL base da API com base no ambiente.
  * Se VITE_API_URL estiver definida no .env, ela terá precedência.
  * Caso contrário, segue a regra:
- * - Produção: https://api.inkers.com.br/api/v1/
- * - Outros (Dev/Teste): https://dev-api.inkers.com.br/api/v1/
+ * - Produção: https://api.guiatour.online/api/v1/
+ * - Outros (Dev/Teste): https://api.guiatour.online/api/v1/
  */
 const baseURL = import.meta.env.VITE_API_URL || (
     import.meta.env.PROD
-        ? 'https://api.inkers.com.br/api/v1/'
-        : 'https://dev-api.inkers.com.br/api/v1/'
+        ? 'https://api.guiatour.online/api/v1/'
+        : 'https://api.guiatour.online/api/v1/'
 );
 
 export const api = axios.create({

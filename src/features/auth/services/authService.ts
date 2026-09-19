@@ -1,5 +1,5 @@
 import { api } from '@/services/api';
-import type { LoginResult, RefreshResult, RecoveryResult, GoogleLoginPayload } from '@/types/api';
+import type { LoginResult, RefreshResult, RecoveryResult, GoogleLoginPayload, GoogleLoginCodePayload } from '@/types/api';
 import axios from 'axios';
 
 /**
@@ -9,7 +9,33 @@ import axios from 'axios';
  */
 class AuthService {
   /**
-   * Autentica um usuário utilizando dados do Google OAuth.
+   * Autentica um usuário utilizando o código de autorização do Google OAuth.
+   * Envia o code para o backend trocar por tokens.
+   * 
+   * @param payload - Objeto contendo o code retornado pelo Google.
+   * @returns Uma promessa que resolve para um LoginResult.
+   */
+  async loginGoogleCode(payload: GoogleLoginCodePayload): Promise<LoginResult> {
+    try {
+      const response = await api.post('login_google', payload);
+      return this.parseLoginResponse(response);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        return this.parseLoginResponse(error.response);
+      }
+      return {
+        success: false,
+        statusCode: 500,
+        token: '',
+        rToken: '',
+        userId: '',
+        errorMessage: 'Não foi possível conectar ao servidor. Tente novamente mais tarde.',
+      };
+    }
+  }
+
+  /**
+   * Autentica um usuário utilizando dados do Google OAuth (Fluxo Implícito).
    * Envia as informações recebidas do Google para o backend para validação ou criação de conta.
    * 
    * @param payload - Dados incluindo e-mail, ID, token e nome do Google, além de metadados.

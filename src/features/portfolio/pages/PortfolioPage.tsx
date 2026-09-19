@@ -70,7 +70,7 @@ function ScheduleItemEditor({
     return (
         <div className={cn(
             "flex flex-col gap-3 p-4 rounded-2xl transition-all duration-300",
-            aberto ? "bg-slate-800/40 border border-slate-700/50 shadow-lg shadow-black/10" : "bg-transparent border border-transparent"
+            aberto ? "bg-blue-50/60 border border-blue-200/70 shadow-xs" : "bg-transparent border border-transparent"
         )}>
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -78,7 +78,7 @@ function ScheduleItemEditor({
                         onClick={() => onUpdate({ aberto: !aberto, inicio, fim })}
                         className={cn(
                             "w-12 h-6 rounded-full relative transition-all duration-300 cursor-pointer p-1",
-                            aberto ? "bg-[#F7931E]" : "bg-slate-700"
+                            aberto ? "bg-[#2563eb]" : "bg-slate-300"
                         )}
                     >
                         <div className={cn(
@@ -88,13 +88,13 @@ function ScheduleItemEditor({
                     </div>
                     <span className={cn(
                         "text-sm font-bold tracking-tight transition-colors",
-                        aberto ? "text-white" : "text-[#8a94a6]"
+                        aberto ? "text-slate-900" : "text-slate-500"
                     )}>
                         {day.name}
                     </span>
                 </div>
                 {!aberto && (
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-600 bg-slate-900/50 px-2.5 py-1 rounded-full">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200/60">
                         Fechado
                     </span>
                 )}
@@ -102,30 +102,30 @@ function ScheduleItemEditor({
 
             {aberto && (
                 <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="flex-1 flex items-center bg-[#0f1420] border border-slate-700/50 rounded-xl px-3 py-2.5 gap-2 group focus-within:border-[#F7931E]/50 transition-colors">
-                        <div className="flex flex-col">
-                            <span className="text-[9px] uppercase font-black text-slate-500 tracking-tighter">Início</span>
+                    <div className="flex-1 flex items-center bg-white border border-slate-200 rounded-xl px-3 py-2.5 gap-2 group focus-within:border-[#2563eb] focus-within:ring-2 focus-within:ring-blue-500/15 transition-all shadow-2xs">
+                        <div className="flex flex-col w-full">
+                            <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Início</span>
                             <select
                                 value={inicio}
                                 onChange={(e) => onUpdate({ aberto, inicio: e.target.value, fim })}
-                                className="bg-transparent text-sm font-bold text-white outline-none appearance-none cursor-pointer w-full"
+                                className="bg-transparent text-sm font-bold text-slate-800 outline-none appearance-none cursor-pointer w-full"
                             >
-                                {HOUR_OPTIONS.map(h => <option key={h} value={h} className="bg-[#141a2b]">{h}</option>)}
+                                {HOUR_OPTIONS.map(h => <option key={h} value={h} className="bg-white text-slate-800">{h}</option>)}
                             </select>
                         </div>
                     </div>
 
-                    <div className="text-[#F7931E] font-black text-xs px-1">—</div>
+                    <div className="text-[#2563eb] font-black text-xs px-1">—</div>
 
-                    <div className="flex-1 flex items-center bg-[#0f1420] border border-slate-700/50 rounded-xl px-3 py-2.5 gap-2 group focus-within:border-[#F7931E]/50 transition-colors">
-                        <div className="flex flex-col">
-                            <span className="text-[9px] uppercase font-black text-slate-500 tracking-tighter">Fim</span>
+                    <div className="flex-1 flex items-center bg-white border border-slate-200 rounded-xl px-3 py-2.5 gap-2 group focus-within:border-[#2563eb] focus-within:ring-2 focus-within:ring-blue-500/15 transition-all shadow-2xs">
+                        <div className="flex flex-col w-full">
+                            <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Fim</span>
                             <select
                                 value={fim}
                                 onChange={(e) => onUpdate({ aberto, inicio, fim: e.target.value })}
-                                className="bg-transparent text-sm font-bold text-white outline-none appearance-none cursor-pointer w-full"
+                                className="bg-transparent text-sm font-bold text-slate-800 outline-none appearance-none cursor-pointer w-full"
                             >
-                                {HOUR_OPTIONS.map(h => <option key={h} value={h} className="bg-[#141a2b]">{h}</option>)}
+                                {HOUR_OPTIONS.map(h => <option key={h} value={h} className="bg-white text-slate-800">{h}</option>)}
                             </select>
                         </div>
                     </div>
@@ -137,9 +137,9 @@ function ScheduleItemEditor({
 
 function SectionStatusIcon({ status }: { status: SectionStatus }) {
     if (status === "complete") {
-        return <Check className="h-4 w-4 text-[#4ADE80]" strokeWidth={2.5} />;
+        return <Check className="h-4 w-4 text-emerald-600" strokeWidth={2.5} />;
     }
-    return <Circle className="h-4 w-4 text-[#8a94a6]" strokeWidth={2} />;
+    return <Circle className="h-4 w-4 text-slate-300" strokeWidth={2} />;
 }
 
 function EditableField({
@@ -148,7 +148,8 @@ function EditableField({
     onSave,
     multiline = false,
     numericOnly = false,
-    maxLength
+    maxLength,
+    theme = "light"
 }: {
     label: string;
     value: string | undefined;
@@ -156,6 +157,7 @@ function EditableField({
     multiline?: boolean;
     numericOnly?: boolean;
     maxLength?: number;
+    theme?: "light" | "dark";
 }) {
     const [localValue, setLocalValue] = useState(value || '');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -177,14 +179,22 @@ function EditableField({
         }
     };
 
+    const isDark = theme === "dark";
+
     return (
         <div className="mb-3.5 last:mb-0">
             <div className="flex justify-between items-center mb-1">
-                <p className="text-xs uppercase tracking-wide text-[#8a94a6]">
+                <p className={cn(
+                    "text-xs uppercase tracking-wide font-semibold",
+                    isDark ? "text-white/70" : "text-slate-500"
+                )}>
                     {label}
                 </p>
                 {maxLength && (
-                    <span className="text-[10px] text-[#8a94a6] font-medium">
+                    <span className={cn(
+                        "text-[10px] font-medium",
+                        isDark ? "text-white/60" : "text-slate-400"
+                    )}>
                         {Math.max(0, maxLength - localValue.length)} restantes
                     </span>
                 )}
@@ -196,7 +206,10 @@ function EditableField({
                     maxLength={maxLength}
                     onChange={(e) => setLocalValue(e.target.value)}
                     onBlur={handleBlur}
-                    className="w-full bg-transparent border-none p-0 text-sm font-medium text-white focus:outline-none focus:border-b focus:border-[#F7931E] transition-none resize-none overflow-hidden"
+                    className={cn(
+                        "w-full bg-transparent border-none p-0 text-sm font-medium focus:outline-none focus:border-b-2 focus:border-[#2563eb] transition-none resize-none overflow-hidden",
+                        isDark ? "text-white placeholder:text-white/40" : "text-slate-900 placeholder:text-slate-400"
+                    )}
                 />
             ) : (
                 <Input
@@ -209,7 +222,10 @@ function EditableField({
                         setLocalValue(val);
                     }}
                     onBlur={handleBlur}
-                    className="bg-transparent border-none p-0 h-auto text-sm font-medium text-white focus-visible:ring-0 focus-visible:border-b focus-visible:border-[#F7931E] rounded-none transition-none"
+                    className={cn(
+                        "bg-transparent border-none p-0 h-auto text-sm font-semibold focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-[#2563eb] rounded-none transition-none shadow-none",
+                        isDark ? "text-white placeholder:text-white/40" : "text-slate-900 placeholder:text-slate-400"
+                    )}
                 />
             )}
         </div>
@@ -236,7 +252,7 @@ function ProgressRing({ progress, size = 112, strokeWidth = 6 }: { progress: num
                     stroke="currentColor"
                     strokeWidth={strokeWidth}
                     fill="transparent"
-                    className="text-slate-800"
+                    className="text-slate-200/60"
                 />
                 {/* Progress circle */}
                 <circle
@@ -249,7 +265,7 @@ function ProgressRing({ progress, size = 112, strokeWidth = 6 }: { progress: num
                     strokeDasharray={circumference}
                     style={{ strokeDashoffset: offset, transition: 'stroke-dashoffset 0.5s ease' }}
                     strokeLinecap="round"
-                    className="text-slate-700/50"
+                    className="text-[#2563eb]"
                 />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-[2.2rem]">
@@ -266,10 +282,7 @@ export function PortfolioPage() {
         loadData: loadPortfolio,
         handleUpdateBasico: updatePortfolioBasico,
         handleUpload: uploadFile,
-        handleDeleteFoto,
-        handleAddPosTattoo,
-        handleUpdatePosTattoo,
-        handleDeleteCuidado
+        handleDeleteFoto
     } = usePortfolioController();
 
     const {
@@ -284,7 +297,6 @@ export function PortfolioPage() {
     } = useAccountController();
 
     const [photoToDelete, setPhotoToDelete] = useState<number | null>(null);
-    const [cuidadoToDelete, setCuidadoToDelete] = useState<number | null>(null);
     const [cepError, setCepError] = useState<{ title: string, message: string } | null>(null);
     const [activeAccordion, setActiveAccordion] = useState<string | undefined>("apresentacao");
     const [userId] = useState<string | null>(() => localStorage.getItem("id"));
@@ -305,27 +317,23 @@ export function PortfolioPage() {
     const getImageUrl = (url: string | undefined) => {
         if (!url) return "";
         if (url.startsWith('data:') || url.startsWith('http')) return url;
-        return `https://app.inkers.com.br${url}`;
+        return `https://guiatour.online${url.startsWith('/') ? '' : '/'}${url}`;
     };
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'bio' | 'gallery' | 'capa') => {
         const file = event.target.files?.[0];
-        if (!file || !portfolio?.id_site) return;
-
-        /*        const reader = new FileReader();
-                reader.onloadend = async () => {
-                    const base64String = reader.result as string;
-                    await uploadFile(type, file.name, base64String, portfolio.id_site);
-                    event.target.value = '';
-                };
-                reader.readAsDataURL(file); */
+        if (!file) return;
 
         try {
-            const base64String = await processAndCompressImage(file);
-            await uploadFile(type, file.name, base64String, portfolio.id_site);
-        } catch (error) {
+            // Reduzido para 800px para o avatar ser mais leve e evitar limites de upload do servidor
+            const maxDim = type === 'avatar' ? 800 : 1920;
+            const base64String = await processAndCompressImage(file, maxDim);
+            const idSite = portfolio?.id_site || 0;
+            await uploadFile(type, file.name, base64String, idSite);
+        } catch (error: any) {
             console.error('Erro ao processar/enviar imagem:', error);
-            alert('Não foi possível enviar essa imagem. Tente outra foto ou tire uma nova.');
+            const errorMessage = error?.response?.data?.error || error?.response?.data?.message || error?.message || 'Erro desconhecido';
+            alert(`Não foi possível enviar essa imagem: ${errorMessage}`);
         } finally {
             event.target.value = '';
         }
@@ -359,11 +367,6 @@ export function PortfolioPage() {
         return isComplete ? "complete" : "pending";
     }, [portfolio]);
 
-    const statusPosTattoo = useMemo((): SectionStatus => {
-        const isComplete = (portfolio?.cuidados?.length || 0) > 0;
-        return isComplete ? "complete" : "pending";
-    }, [portfolio]);
-
     const statusIdentidade = useMemo((): SectionStatus => {
         const isComplete = !!(portfolio?.avatar && portfolio?.foto_capa);
         return isComplete ? "complete" : "pending";
@@ -387,18 +390,18 @@ export function PortfolioPage() {
 
     if (loadingPortfolio || loadingAccount) {
         return (
-            <div className="flex items-center justify-center p-8 min-h-screen bg-[#0f1420]">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#F7931E]"></div>
+            <div className="flex items-center justify-center p-8 min-h-screen bg-slate-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2563eb]"></div>
             </div>
         );
     }
 
     return (
-        <div className="bg-[#0f1420] text-white pb-20">
+        <div className="text-slate-900 pb-20">
             <div className="p-6 space-y-6 max-w-2xl mx-auto">
 
                 {/* 1. Card de identidade + progresso */}
-                <Card id="section-identidade" className="relative p-6 md:p-8 bg-[#141a2b] border-none rounded-[2.5rem] flex flex-row items-center gap-6 overflow-hidden group min-h-[220px]">
+                <Card id="section-identidade" className="relative p-6 md:p-8 bg-white border border-slate-200/80 rounded-[2.5rem] flex flex-row items-center gap-6 overflow-hidden group min-h-[220px] text-slate-900 shadow-xs hover:border-blue-200/80 transition-all duration-300">
                     {/* Imagem de Capa e Gradiente */}
                     <div className="absolute inset-0 z-0">
                         {portfolio?.foto_capa ? (
@@ -408,26 +411,26 @@ export function PortfolioPage() {
                                 className="w-full h-full object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full bg-slate-800/20" />
+                            <div className="w-full h-full bg-slate-50" />
                         )}
-                        {/* Sombra uniforme em toda a capa */}
-                        <div className="absolute inset-0 bg-black/40" />
+                        {/* Overlay claro para contraste visual ótimo sobre foto */}
+                        <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px]" />
                     </div>
 
                     {/* Botão Guia "Como preencher" no canto superior direito do card */}
                     <button
                         type="button"
                         onClick={() => openTour(0)}
-                        className="absolute top-6 right-6 z-20 flex items-center gap-1.5 text-xs font-bold text-white bg-slate-900/80 hover:bg-slate-900 border border-slate-700/80 hover:border-[#F7931E] rounded-full px-3.5 py-1.5 backdrop-blur-md transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+                        className="absolute top-6 right-6 z-20 flex items-center gap-1.5 text-xs font-bold text-slate-600 bg-white/80 hover:bg-white border border-slate-200 hover:border-[#2563eb] rounded-full px-3.5 py-1.5 backdrop-blur-md transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
                         title="Ver assistente visual de como preencher cada seção"
                     >
-                        <Sparkles className="w-3.5 h-3.5 text-[#F7931E]" />
+                        <Sparkles className="w-3.5 h-3.5 text-[#2563eb]" />
                         <span>Como preencher</span>
                     </button>
 
                     {/* Botão de upload da capa */}
-                    <label className="absolute bottom-6 right-6 flex items-center justify-center w-10 h-10 bg-[#F7931E] rounded-full cursor-pointer shadow-lg z-20 hover:scale-110 transition-transform active:scale-95">
-                        <Camera className="h-5 w-5 text-slate-950" />
+                    <label className="absolute bottom-6 right-6 flex items-center justify-center w-10 h-10 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-full cursor-pointer shadow-lg z-20 hover:scale-110 transition-all active:scale-95">
+                        <Camera className="h-5 w-5 text-white" />
                         <input
                             type="file"
                             className="hidden"
@@ -437,7 +440,7 @@ export function PortfolioPage() {
                     </label>
 
                     <div className="relative z-10 shrink-0">
-                        <div className="absolute inset-[5px] rounded-full overflow-hidden bg-slate-800 border-2 border-slate-700/30">
+                        <div className="absolute inset-[5px] rounded-full overflow-hidden bg-slate-100 border-2 border-white shadow-sm">
                             {portfolio?.avatar ? (
                                 <img
                                     src={getImageUrl(portfolio.avatar)}
@@ -445,17 +448,17 @@ export function PortfolioPage() {
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-orange-500/10">
-                                    <span className="text-[#F7931E] text-3xl font-bold">{account?.nome?.charAt(0)}</span>
+                                <div className="w-full h-full flex items-center justify-center bg-blue-50">
+                                    <span className="text-[#2563eb] text-3xl font-bold">{account?.nome?.charAt(0)}</span>
                                 </div>
                             )}
                         </div>
                         <div className="relative pointer-events-none">
                             <ProgressRing progress={progressPercent} size={130} strokeWidth={3} />
                         </div>
-                        <div className="absolute bottom-1 right-1 bg-[#0f1428] p-1 rounded-full z-10">
-                            <label className="flex items-center justify-center w-9 h-9 bg-[#F7931E] rounded-full cursor-pointer shadow-lg hover:scale-110 transition-transform active:scale-95">
-                                <Camera className="h-4 w-4 text-slate-950" />
+                        <div className="absolute bottom-1 right-1 bg-white p-1 rounded-full z-10 shadow-sm">
+                            <label className="flex items-center justify-center w-9 h-9 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-full cursor-pointer shadow-lg hover:scale-110 transition-all active:scale-95">
+                                <Camera className="h-4 w-4 text-white" />
                                 <input
                                     type="file"
                                     className="hidden"
@@ -480,9 +483,9 @@ export function PortfolioPage() {
                             onSave={(val) => handleUpdateBasico({ nome: account?.nome, apelido: val })}
                         />
                         <div className="mt-2 flex items-center gap-2">
-                            <span className="text-[10px] uppercase tracking-widest text-slate-400 font-black">Perfil</span>
-                            <div className="bg-[#F7931E]/20 text-[#F7931E] text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-tight">
-                                {progressPercent}% Completo
+                            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Perfil</span>
+                            <div className="bg-blue-50 border border-blue-100 text-[#2563eb] text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-tight">
+                                {progressPercent}%
                             </div>
                         </div>
                     </div>
@@ -496,13 +499,13 @@ export function PortfolioPage() {
                     onValueChange={(val) => setActiveAccordion(val)}
                     className="w-full space-y-3"
                 >
-                    <AccordionItem id="section-apresentacao" value="apresentacao" className="rounded-3xl border-none bg-[#141a2b] px-6 overflow-hidden">
-                        <AccordionTrigger className="py-5 hover:no-underline [&>svg]:text-[#8a94a6]">
+                    <AccordionItem id="section-apresentacao" value="apresentacao" className="rounded-3xl border border-slate-200/80 bg-white px-6 overflow-hidden shadow-xs hover:border-blue-200/80 transition-colors">
+                        <AccordionTrigger className="py-5 hover:no-underline [&>svg]:text-slate-400">
                             <div className="flex flex-1 items-center gap-4 pr-2">
-                                <div className="w-10 h-10 rounded-2xl bg-[#F7931E]/10 flex items-center justify-center">
-                                    <FileText className="h-5 w-5 text-[#F7931E]" strokeWidth={2} />
+                                <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center">
+                                    <FileText className="h-5 w-5 text-[#2563eb]" strokeWidth={2} />
                                 </div>
-                                <span className="flex-1 text-left text-lg font-medium text-[#F7931E]">Apresentação</span>
+                                <span className="flex-1 text-left text-lg font-bold text-slate-900">Apresentação</span>
                                 <span
                                     role="button"
                                     tabIndex={0}
@@ -510,7 +513,7 @@ export function PortfolioPage() {
                                         e.stopPropagation();
                                         openTourForSection('apresentacao');
                                     }}
-                                    className="p-1.5 rounded-full text-slate-500 hover:text-[#F7931E] hover:bg-[#F7931E]/10 transition-colors cursor-pointer"
+                                    className="p-1.5 rounded-full text-slate-400 hover:text-[#2563eb] hover:bg-blue-50 transition-colors cursor-pointer"
                                     title="Como preencher Apresentação"
                                 >
                                     <HelpCircle className="w-4 h-4" />
@@ -518,27 +521,27 @@ export function PortfolioPage() {
                                 <SectionStatusIcon status={statusApresentacao} />
                             </div>
                         </AccordionTrigger>
-                        <AccordionContent className="pb-6 pt-2 border-t border-slate-800/50">
+                        <AccordionContent className="pb-6 pt-2 border-t border-slate-100">
                             <div className="space-y-6 pt-4">
                                 <div className="flex flex-col items-center space-y-4 mb-6">
                                     <div className="relative group">
-                                        <div className="w-28 h-28 rounded-full overflow-hidden bg-slate-800 border-2 border-slate-700/50">
+                                        <div className="w-28 h-28 rounded-full overflow-hidden bg-slate-100 border-2 border-slate-200 shadow-inner">
                                             {portfolio?.foto_bio ? (
                                                 <img src={getImageUrl(portfolio.foto_bio)} alt="Foto da Bio" className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-slate-800">
-                                                    <Camera className="h-8 w-8 text-slate-600" />
+                                                <div className="w-full h-full flex items-center justify-center bg-slate-100">
+                                                    <Camera className="h-8 w-8 text-slate-400" />
                                                 </div>
                                             )}
                                         </div>
-                                        <label className="absolute bottom-0 right-0 p-2 bg-[#F7931E] rounded-full cursor-pointer shadow-lg hover:scale-110 transition-transform active:scale-95">
-                                            <Camera className="h-4 w-4 text-slate-950" />
+                                        <label className="absolute bottom-0 right-0 p-2 bg-[#2563eb] hover:bg-[#1d4ed8] rounded-full cursor-pointer shadow-md hover:scale-110 transition-all active:scale-95 text-white">
+                                            <Camera className="h-4 w-4 text-white" />
                                             <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'bio')} />
                                         </label>
                                     </div>
                                     <div className="text-center">
-                                        <p className="text-sm font-medium text-white">Foto da biografia</p>
-                                        <p className="text-xs text-[#8a94a6] max-w-[240px] mt-1 leading-relaxed">
+                                        <p className="text-sm font-bold text-slate-900">Foto da biografia</p>
+                                        <p className="text-xs text-slate-500 max-w-[240px] mt-1 leading-relaxed">
                                             Esta foto aparece na seção "Sobre" da sua página, dando um toque pessoal para seus clientes.
                                         </p>
                                     </div>
@@ -552,13 +555,13 @@ export function PortfolioPage() {
                         </AccordionContent>
                     </AccordionItem>
 
-                    <AccordionItem id="section-contato" value="contato" className="rounded-3xl border-none bg-[#141a2b] px-6 overflow-hidden">
-                        <AccordionTrigger className="py-5 hover:no-underline [&>svg]:text-[#8a94a6]">
+                    <AccordionItem id="section-contato" value="contato" className="rounded-3xl border border-slate-200/80 bg-white px-6 overflow-hidden shadow-xs hover:border-blue-200/80 transition-colors">
+                        <AccordionTrigger className="py-5 hover:no-underline [&>svg]:text-slate-400">
                             <div className="flex flex-1 items-center gap-4 pr-2">
-                                <div className="w-10 h-10 rounded-2xl bg-[#F7931E]/10 flex items-center justify-center">
-                                    <Phone className="h-5 w-5 text-[#F7931E]" strokeWidth={2} />
+                                <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center">
+                                    <Phone className="h-5 w-5 text-[#2563eb]" strokeWidth={2} />
                                 </div>
-                                <span className="flex-1 text-left text-lg font-medium text-[#F7931E]">Contato</span>
+                                <span className="flex-1 text-left text-lg font-bold text-slate-900">Contato</span>
                                 <span
                                     role="button"
                                     tabIndex={0}
@@ -566,7 +569,7 @@ export function PortfolioPage() {
                                         e.stopPropagation();
                                         openTourForSection('contato');
                                     }}
-                                    className="p-1.5 rounded-full text-slate-500 hover:text-[#F7931E] hover:bg-[#F7931E]/10 transition-colors cursor-pointer"
+                                    className="p-1.5 rounded-full text-slate-400 hover:text-[#2563eb] hover:bg-blue-50 transition-colors cursor-pointer"
                                     title="Como preencher Contato"
                                 >
                                     <HelpCircle className="w-4 h-4" />
@@ -574,7 +577,7 @@ export function PortfolioPage() {
                                 <SectionStatusIcon status={statusContato} />
                             </div>
                         </AccordionTrigger>
-                        <AccordionContent className="pb-6 pt-2 border-t border-slate-800/50">
+                        <AccordionContent className="pb-6 pt-2 border-t border-slate-100">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <EditableField label="Telefone" value={account?.telefone} numericOnly onSave={(val) => updateAccountContato({ telefone: val, email: account?.email, instagram: account?.insta })} />
                                 <EditableField label="Email" value={account?.email} onSave={(val) => updateAccountContato({ telefone: account?.telefone, email: val, instagram: account?.insta })} />
@@ -583,13 +586,13 @@ export function PortfolioPage() {
                         </AccordionContent>
                     </AccordionItem>
 
-                    <AccordionItem id="section-localizacao" value="localizacao" className="rounded-3xl border-none bg-[#141a2b] px-6 overflow-hidden">
-                        <AccordionTrigger className="py-5 hover:no-underline [&>svg]:text-[#8a94a6]">
+                    <AccordionItem id="section-localizacao" value="localizacao" className="rounded-3xl border border-slate-200/80 bg-white px-6 overflow-hidden shadow-xs hover:border-blue-200/80 transition-colors">
+                        <AccordionTrigger className="py-5 hover:no-underline [&>svg]:text-slate-400">
                             <div className="flex flex-1 items-center gap-4 pr-2">
-                                <div className="w-10 h-10 rounded-2xl bg-[#F7931E]/10 flex items-center justify-center">
-                                    <MapPin className="h-5 w-5 text-[#F7931E]" strokeWidth={2} />
+                                <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center">
+                                    <MapPin className="h-5 w-5 text-[#2563eb]" strokeWidth={2} />
                                 </div>
-                                <span className="flex-1 text-left text-lg font-medium text-[#F7931E]">Endereço e Localização</span>
+                                <span className="flex-1 text-left text-lg font-bold text-slate-900">Endereço e Localização</span>
                                 <span
                                     role="button"
                                     tabIndex={0}
@@ -597,7 +600,7 @@ export function PortfolioPage() {
                                         e.stopPropagation();
                                         openTourForSection('localizacao');
                                     }}
-                                    className="p-1.5 rounded-full text-slate-500 hover:text-[#F7931E] hover:bg-[#F7931E]/10 transition-colors cursor-pointer"
+                                    className="p-1.5 rounded-full text-slate-400 hover:text-[#2563eb] hover:bg-blue-50 transition-colors cursor-pointer"
                                     title="Como preencher Endereço e Localização"
                                 >
                                     <HelpCircle className="w-4 h-4" />
@@ -605,7 +608,7 @@ export function PortfolioPage() {
                                 <SectionStatusIcon status={statusLocalizacao} />
                             </div>
                         </AccordionTrigger>
-                        <AccordionContent className="pb-6 pt-2 border-t border-slate-800/50">
+                        <AccordionContent className="pb-6 pt-2 border-t border-slate-100">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <EditableField label="CEP" value={account?.cep} numericOnly onSave={async (val) => {
                                     const cleanCep = val.replace(/\D/g, '');
@@ -631,15 +634,18 @@ export function PortfolioPage() {
                         </AccordionContent>
                     </AccordionItem>
 
-                    <AccordionItem id="section-trabalhos" value="trabalhos" className="rounded-3xl border-none bg-[#141a2b] px-6 overflow-hidden">
-                        <AccordionTrigger className="py-5 hover:no-underline [&>svg]:text-[#8a94a6]">
+                    <AccordionItem id="section-trabalhos" value="trabalhos" className="rounded-3xl border border-slate-200/80 bg-white px-6 overflow-hidden shadow-xs hover:border-blue-200/80 transition-colors">
+                        <AccordionTrigger className="py-5 hover:no-underline [&>svg]:text-slate-400">
                             <div className="flex flex-1 items-center gap-4 pr-2">
-                                <div className="w-10 h-10 rounded-2xl bg-[#F7931E]/10 flex items-center justify-center">
-                                    <Images className="h-5 w-5 text-[#F7931E]" strokeWidth={2} />
+                                <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center">
+                                    <Images className="h-5 w-5 text-[#2563eb]" strokeWidth={2} />
                                 </div>
                                 <div className="flex-1 flex flex-col items-start">
-                                    <span className="text-lg font-medium text-[#F7931E]">Trabalhos</span>
-                                    <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider", statusTrabalhos === "complete" ? "bg-[#4ADE80]/10 text-[#4ADE80]" : "bg-slate-800 text-[#8a94a6]")}>
+                                    <span className="text-lg font-bold text-slate-900">Trabalhos</span>
+                                    <span className={cn(
+                                        "text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border",
+                                        statusTrabalhos === "complete" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-blue-50 text-[#2563eb] border-blue-200/70"
+                                    )}>
                                         {portfolio?.itens?.length || 0} / 4 fotos
                                     </span>
                                 </div>
@@ -650,7 +656,7 @@ export function PortfolioPage() {
                                         e.stopPropagation();
                                         openTourForSection('trabalhos');
                                     }}
-                                    className="p-1.5 rounded-full text-slate-500 hover:text-[#F7931E] hover:bg-[#F7931E]/10 transition-colors cursor-pointer"
+                                    className="p-1.5 rounded-full text-slate-400 hover:text-[#2563eb] hover:bg-blue-50 transition-colors cursor-pointer"
                                     title="Como preencher Trabalhos"
                                 >
                                     <HelpCircle className="w-4 h-4" />
@@ -658,17 +664,17 @@ export function PortfolioPage() {
                                 <SectionStatusIcon status={statusTrabalhos} />
                             </div>
                         </AccordionTrigger>
-                        <AccordionContent className="pb-6 pt-2 border-t border-slate-800/50">
+                        <AccordionContent className="pb-6 pt-2 border-t border-slate-100">
                             <div className="grid grid-cols-3 gap-3 pt-4">
                                 {portfolio?.itens?.map((item) => (
-                                    <div key={item.id_foto} className="aspect-square rounded-2xl overflow-hidden bg-slate-800 border border-slate-700/50 group relative">
+                                    <div key={item.id_foto} className="aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 group relative shadow-2xs">
                                         <img src={getImageUrl(item.url_foto)} alt="Portfolio" className="w-full h-full object-cover" />
-                                        <Button variant="secondary" size="icon" className="absolute bottom-2 left-2 h-7 w-7 rounded-full shadow-lg bg-[#F7931E] text-slate-950 border-none" onClick={() => setPhotoToDelete(item.id_foto)}>
+                                        <Button variant="secondary" size="icon" className="absolute bottom-2 left-2 h-7 w-7 rounded-full shadow-md bg-slate-900/80 hover:bg-red-600 text-white border-none cursor-pointer transition-colors" onClick={() => setPhotoToDelete(item.id_foto)}>
                                             <Trash2 className="w-3.5 h-3.5" />
                                         </Button>
                                     </div>
                                 ))}
-                                <label className="aspect-square rounded-2xl border-2 border-dashed border-slate-800 flex flex-col items-center justify-center gap-2 text-[#8a94a6] hover:text-[#F7931E] hover:border-[#F7931E]/40 cursor-pointer">
+                                <label className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/70 flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-[#2563eb] hover:border-blue-300 hover:bg-blue-50/40 cursor-pointer transition-all shadow-2xs">
                                     <Plus className="w-6 h-6" />
                                     <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'gallery')} />
                                 </label>
@@ -676,57 +682,13 @@ export function PortfolioPage() {
                         </AccordionContent>
                     </AccordionItem>
 
-                    <AccordionItem id="section-pos-tattoo" value="pos-tattoo" className="rounded-3xl border-none bg-[#141a2b] px-6 overflow-hidden">
-                        <AccordionTrigger className="py-5 hover:no-underline [&>svg]:text-[#8a94a6]">
+                    <AccordionItem id="section-config" value="config" className="rounded-3xl border border-slate-200/80 bg-white px-6 overflow-hidden shadow-xs hover:border-blue-200/80 transition-colors">
+                        <AccordionTrigger className="py-5 hover:no-underline [&>svg]:text-slate-400">
                             <div className="flex flex-1 items-center gap-4 pr-2">
-                                <div className="w-10 h-10 rounded-2xl bg-[#F7931E]/10 flex items-center justify-center">
-                                    <FileText className="h-5 w-5 text-[#F7931E]" strokeWidth={2} />
+                                <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center">
+                                    <Settings className="h-5 w-5 text-[#2563eb]" strokeWidth={2} />
                                 </div>
-                                <span className="flex-1 text-left text-lg font-medium text-[#F7931E]">Cuidados pós tattoo</span>
-                                <span
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        openTourForSection('pos-tattoo');
-                                    }}
-                                    className="p-1.5 rounded-full text-slate-500 hover:text-[#F7931E] hover:bg-[#F7931E]/10 transition-colors cursor-pointer"
-                                    title="Como preencher Cuidados pós tattoo"
-                                >
-                                    <HelpCircle className="w-4 h-4" />
-                                </span>
-                                <SectionStatusIcon status={statusPosTattoo} />
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="pb-6 pt-2 border-t border-slate-800/50">
-                            <div className="space-y-4 pt-4">
-                                <div className="flex justify-between items-center mb-2">
-                                    <p className="text-xs text-[#8a94a6] uppercase tracking-wider font-medium">Instruções de cuidados</p>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-[#F7931E]/10 text-[#F7931E]" onClick={handleAddPosTattoo}>
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                                <div className="space-y-3">
-                                    {portfolio?.cuidados?.map((item, index) => (
-                                        <div key={item.id_item || index} className="relative group">
-                                            <EditableField label={`Cuidado #${index + 1}`} value={item.descricao} multiline onSave={(val) => handleUpdatePosTattoo(item.id_item, val)} />
-                                            <Button variant="ghost" size="icon" className="absolute top-0 right-0 h-8 w-8 text-[#8a94a6] hover:text-red-500" onClick={() => setCuidadoToDelete(item.id_item)}>
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem id="section-config" value="config" className="rounded-3xl border-none bg-[#141a2b] px-6 overflow-hidden">
-                        <AccordionTrigger className="py-5 hover:no-underline [&>svg]:text-[#8a94a6]">
-                            <div className="flex flex-1 items-center gap-4 pr-2">
-                                <div className="w-10 h-10 rounded-2xl bg-[#F7931E]/10 flex items-center justify-center">
-                                    <Settings className="h-5 w-5 text-[#F7931E]" strokeWidth={2} />
-                                </div>
-                                <span className="flex-1 text-left text-lg font-medium text-[#F7931E]">Configurações Avançadas</span>
+                                <span className="flex-1 text-left text-lg font-bold text-slate-900">Configurações Avançadas</span>
                                 <span
                                     role="button"
                                     tabIndex={0}
@@ -734,7 +696,7 @@ export function PortfolioPage() {
                                         e.stopPropagation();
                                         openTourForSection('config');
                                     }}
-                                    className="p-1.5 rounded-full text-slate-500 hover:text-[#F7931E] hover:bg-[#F7931E]/10 transition-colors cursor-pointer"
+                                    className="p-1.5 rounded-full text-slate-400 hover:text-[#2563eb] hover:bg-blue-50 transition-colors cursor-pointer"
                                     title="Como preencher Configurações Avançadas"
                                 >
                                     <HelpCircle className="w-4 h-4" />
@@ -742,23 +704,23 @@ export function PortfolioPage() {
                                 <SectionStatusIcon status="complete" />
                             </div>
                         </AccordionTrigger>
-                        <AccordionContent className="pb-6 pt-2 border-t border-slate-800/50">
+                        <AccordionContent className="pb-6 pt-2 border-t border-slate-100">
                             <div className="space-y-6 pt-4">
                                 <div className="space-y-4">
-                                    <EditableField label="Google Analytics ID" value={account?.g_analytcs || account?.g_tag} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: val, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: account?.conta_google_ads || account?.conta_google_ads_id, horario: account?.horario })} />
-                                    <EditableField label="Meta Pixel ID" value={account?.meta_pixel_id || account?.meta_pixel} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: account?.g_analytcs || account?.g_tag, meta_pixel_id: val, conta_google_ads: account?.conta_google_ads || account?.conta_google_ads_id, horario: account?.horario })} />
-                                    <EditableField label="Conta Google Ads" value={account?.conta_google_ads || account?.conta_google_ads_id} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: account?.g_analytcs || account?.g_tag, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: val, horario: account?.horario })} />
+                                    <EditableField label="Google Analytics ID" value={account?.google_analytics_id || account?.g_analytics_id} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: val, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: account?.google_ads_id, horario: account?.horario })} />
+                                    <EditableField label="Meta Pixel ID" value={account?.meta_pixel_id || account?.meta_pixel} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: account?.google_analytics_id || account?.g_analytics_id, meta_pixel_id: val, conta_google_ads: account?.google_ads_id, horario: account?.horario })} />
+                                    <EditableField label="Conta Google Ads" value={account?.google_ads_id} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: account?.google_analytics_id || account?.g_analytics_id, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: val, horario: account?.horario })} />
                                 </div>
-                                <div className="pt-6 border-t border-slate-800/50">
+                                <div className="pt-6 border-t border-slate-100">
                                     <div className="flex items-center gap-2 mb-6">
-                                        <div className="w-1.5 h-4 bg-[#F7931E] rounded-full" />
-                                        <h4 className="text-sm font-black text-white uppercase tracking-widest">Horários de Funcionamento</h4>
+                                        <div className="w-1.5 h-4 bg-[#2563eb] rounded-full" />
+                                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Horários de Funcionamento</h4>
                                     </div>
                                     <div className="grid grid-cols-1 gap-3">
                                         {DAYS_MAP.map((day) => (
                                             <ScheduleItemEditor key={day.id} day={day} data={account?.horario?.[day.id]} onUpdate={(dayData) => {
                                                 const newHorario = { ...(account?.horario || {}), [day.id]: dayData };
-                                                updateAccountConfiguracoesAvancadas({ g_analytcs: account?.g_analytcs || account?.g_tag, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: account?.conta_google_ads || account?.conta_google_ads_id, horario: newHorario });
+                                                updateAccountConfiguracoesAvancadas({ g_analytcs: account?.google_analytics_id || account?.g_analytics_id, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: account?.google_ads_id, horario: newHorario });
                                             }} />
                                         ))}
                                     </div>
@@ -772,12 +734,12 @@ export function PortfolioPage() {
                 <div className="sticky bottom-4 mt-8 px-2 z-10">
                     <Button
                         disabled={!isFullyComplete}
-                        onClick={() => window.open(`https://${account?.slug}.inkers.com.br`, '_blank')}
+                        onClick={() => window.open(`https://${account?.slug}.guiatour.online`, '_blank')}
                         className={cn(
                             "w-full h-[56px] rounded-2xl font-bold text-base transition-all shadow-xl",
                             isFullyComplete
-                                ? "bg-[#F7931E] hover:bg-[#F7931E]/90 text-slate-950 shadow-[#F7931E]/20"
-                                : "bg-slate-800 text-slate-500 opacity-50 cursor-not-allowed"
+                                ? "bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-blue-500/25 cursor-pointer"
+                                : "bg-slate-200 text-slate-400 opacity-70 cursor-not-allowed border-none shadow-none"
                         )}
                     >
                         <ExternalLink className="w-5 h-5 mr-2" />
@@ -788,41 +750,28 @@ export function PortfolioPage() {
 
             {/* Dialogs */}
             <Dialog open={photoToDelete !== null} onOpenChange={(open) => !open && setPhotoToDelete(null)}>
-                <DialogContent className="bg-[#141a2b] border-slate-800 text-white rounded-[2rem]">
+                <DialogContent className="bg-white border-slate-200 text-slate-900 rounded-[2rem] shadow-2xl">
                     <DialogHeader>
-                        <DialogTitle className="text-[#F7931E] text-xl font-bold">Excluir foto</DialogTitle>
-                        <DialogDescription className="text-slate-400">Tem certeza que deseja excluir esta foto do seu portfólio? Esta ação não pode ser desfeita.</DialogDescription>
+                        <DialogTitle className="text-slate-900 text-xl font-bold">Excluir foto</DialogTitle>
+                        <DialogDescription className="text-slate-500">Tem certeza que deseja excluir esta foto do seu portfólio? Esta ação não pode ser desfeita.</DialogDescription>
                     </DialogHeader>
-                    <DialogFooter className="border-t border-slate-800/50 pt-4 flex flex-row gap-3">
-                        <Button variant="ghost" className="flex-1 text-slate-400" onClick={() => setPhotoToDelete(null)}>Cancelar</Button>
-                        <Button className="flex-1 bg-[#F7931E] text-slate-950 font-bold" onClick={async () => { if (photoToDelete !== null) { await handleDeleteFoto(photoToDelete); setPhotoToDelete(null); } }}>Excluir</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={cuidadoToDelete !== null} onOpenChange={(open) => !open && setCuidadoToDelete(null)}>
-                <DialogContent className="bg-[#141a2b] border-slate-800 text-white rounded-[2rem]">
-                    <DialogHeader>
-                        <DialogTitle className="text-[#F7931E] text-xl font-bold">Excluir cuidado</DialogTitle>
-                        <DialogDescription className="text-slate-400">Tem certeza que deseja excluir esta instrução de cuidado? Esta ação não pode ser desfeita.</DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter className="border-t border-slate-800/50 pt-4 flex flex-row gap-3">
-                        <Button variant="ghost" className="flex-1 text-slate-400" onClick={() => setCuidadoToDelete(null)}>Cancelar</Button>
-                        <Button className="flex-1 bg-[#F7931E] text-slate-950 font-bold" onClick={async () => { if (cuidadoToDelete !== null) { await handleDeleteCuidado(cuidadoToDelete); setCuidadoToDelete(null); } }}>Excluir</Button>
+                    <DialogFooter className="border-t border-slate-100 pt-4 flex flex-row gap-3">
+                        <Button variant="ghost" className="flex-1 text-slate-600 hover:bg-slate-100" onClick={() => setPhotoToDelete(null)}>Cancelar</Button>
+                        <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold" onClick={async () => { if (photoToDelete !== null) { await handleDeleteFoto(photoToDelete); setPhotoToDelete(null); } }}>Excluir</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
             <Dialog open={cepError !== null} onOpenChange={(open) => !open && setCepError(null)}>
-                <DialogContent className="bg-[#141a2b] border-slate-800 text-white rounded-[2rem]">
+                <DialogContent className="bg-white border-slate-200 text-slate-900 rounded-[2rem] shadow-2xl">
                     <DialogHeader>
                         <div className="flex items-center gap-3 mb-2">
                             <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center"><AlertCircle className="h-6 w-6 text-red-500" /></div>
                             <DialogTitle className="text-red-500 text-xl font-bold">{cepError?.title}</DialogTitle>
                         </div>
-                        <DialogDescription className="text-slate-400 text-base">{cepError?.message}</DialogDescription>
+                        <DialogDescription className="text-slate-500 text-base">{cepError?.message}</DialogDescription>
                     </DialogHeader>
-                    <DialogFooter className="border-t border-slate-800/50 pt-4"><Button className="w-full bg-[#F7931E] text-slate-950 font-bold h-12 rounded-xl" onClick={() => setCepError(null)}>Entendi</Button></DialogFooter>
+                    <DialogFooter className="border-t border-slate-100 pt-4"><Button className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold h-12 rounded-xl shadow-md shadow-blue-500/20" onClick={() => setCepError(null)}>Entendi</Button></DialogFooter>
                 </DialogContent>
             </Dialog>
 

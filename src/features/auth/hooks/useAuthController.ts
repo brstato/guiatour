@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
-import axios from 'axios';
 import { authService } from '../services/authService';
 
 /**
@@ -139,34 +138,17 @@ export function useAuthController() {
   };
 
   /**
-   * Lida com o processo de login via Google OAuth.
-   * Obtém os dados do usuário do Google e os envia para validação no backend.
+   * Lida com o processo de login via Google OAuth utilizando o fluxo de Authorization Code.
+   * Obtém um código de autorização do Google e o envia para o backend.
    */
   const handleLoginGoogle = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
+    onSuccess: async (codeResponse) => {
       setIsLoading(true);
       try {
-        const { access_token } = tokenResponse;
-
-        // Buscar dados do usuário no Google APIs
-        const userInfo = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${access_token}` },
-        });
-
-        const g_mail = userInfo.data.email;
-        const g_id = userInfo.data.sub;
-        const g_name = userInfo.data.name;
-
-        const r_token = "";
-        const ads_id = null;
-
-        const result = await authService.loginGoogle({
-          g_email: g_mail,
-          g_id,
-          g_token: access_token,
-          g_name,
-          ads_id,
-          r_token
+        const rToken = localStorage.getItem('r_token');
+        const result = await authService.loginGoogleCode({
+          g_code: codeResponse.code,
+          r_token: rToken || undefined
         });
 
         if (result.success) {
@@ -187,7 +169,8 @@ export function useAuthController() {
     onError: (error) => {
       console.log('Login Google falhou:', error);
       setError({ title: 'Erro', message: 'Houve um problema ao realizar o login com o Google.' });
-    }
+    },
+    flow: 'auth-code',
   });
 
   /**

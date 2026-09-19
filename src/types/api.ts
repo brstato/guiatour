@@ -34,6 +34,11 @@ export interface GoogleLoginPayload {
     r_token: string;
 }
 
+export interface GoogleLoginCodePayload {
+    g_code: string;
+    r_token?: string;
+}
+
 export interface AddressData {
     street: string;
     neighborhood: string;
@@ -61,26 +66,18 @@ export interface AccountData {
     complemento: string;
     insta: string;
     meta_pixel: string;
-    g_tag: string;
+    g_analytics_id: string;
     latitude: number;
     longitude: number;
-    conta_google_ads_nome: string;
-    conta_google_ads_id: string;
-    g_analytcs: string;
-    meta_pixel_id: string;
-    conta_google_ads: string;
+    google_ads_nome: string;
+    google_ads_id: string;
+    meta_long_token?: string;
+    meta_ads_id?: string;
+    meta_pixel_id?: string;
+    google_analytics_id?: string;
+    status_campanha_meta?: boolean;
     horario: Record<string, any>;
-}
-
-export interface PosTattooItem {
-    id_item: number;
-    descricao: string;
-}
-
-export interface CuidadoItem {
-    id_item: number;
-    id_site: number;
-    descricao: string;
+    id?: string;
 }
 
 export interface PortfolioData {
@@ -95,6 +92,4 @@ export interface PortfolioData {
         id_foto: number;
         url_foto: string;
     }>;
-    pos_tattoo?: PosTattooItem[];
-    cuidados?: CuidadoItem[];
 }

@@ -70,7 +70,7 @@ export function TabBar() {
 
 Substitui o card grande de perfil (foto + nome + bio) que hoje existe só na aba Editar. No layout novo, ele vira uma faixa fina, comum às duas abas:
 
-- Avatar pequeno (36px), nome, e o link do subdomínio (`bruno.inkers.com.br`) como texto secundário.
+- Avatar pequeno (36px), nome, e o link do subdomínio (`<slug>.guiatour.online` / subdomínio público) como texto secundário.
 - Badge de progresso de preenchimento (ex: "100%") alinhado à direita, cor de sucesso (`text-emerald-400 bg-emerald-400/10`).
 - Esse cabeçalho fica fora do `<Outlet />`, direto no `PerfilLayout`, para não ser recriado ao trocar de aba.
 

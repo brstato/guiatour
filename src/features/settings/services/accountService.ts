@@ -11,7 +11,7 @@ class AccountService {
      * @param id Identificador do usuário.
      */
     async getAccountData(id: string): Promise<AccountData> {
-        const response = await api.post('account/get_data', { id });
+        const response = await api.get(`account/get_data/${id}`);
         return response.data;
     }
 
@@ -81,6 +81,54 @@ class AccountService {
     }
 
     /**
+     * Atualiza o token de longa duração da Meta.
+     */
+    async updateMetaToken(token: string): Promise<any> {
+        const response = await api.post('account/metatoken', { meta_long_token: token });
+        return response.data;
+    }
+
+    /**
+     * Atualiza o ID de anúncios da Meta.
+     */
+    async updateMetaAdsId(id: string): Promise<any> {
+        const response = await api.post('account/meta_ads_id', { MetaAdsId: id });
+        return response.data;
+    }
+
+    /**
+     * Atualiza o Pixel ID da Meta.
+     */
+    async updateMetaPixelId(id: string): Promise<any> {
+        const response = await api.post('account/meta_pixel_id', { MetaPixelId: id });
+        return response.data;
+    }
+
+    /**
+     * Atualiza o Google Analytics ID.
+     */
+    async updateGoogleAnalyticsId(id: string): Promise<any> {
+        const response = await api.post('account/google_analytics_id', { GoogleAnalyticsId: id });
+        return response.data;
+    }
+
+    /**
+     * Atualiza o status da campanha na Meta.
+     */
+    async updateStatusCampanhaMeta(status: boolean): Promise<any> {
+        const response = await api.post('account/status_campanha_meta', { StatusCampanhaMeta: status });
+        return response.data;
+    }
+
+    /**
+     * Sincroniza o cache para uma instância específica.
+     */
+    async sincronizarCache(instance: string): Promise<any> {
+        const response = await api.post(`account/sincronizar-cache/${instance}`);
+        return response.data;
+    }
+
+    /**
      * Registra uma nova conta de usuário.
      * @param data Dados de registro.
      */
@@ -106,7 +154,7 @@ class AccountService {
      * @param slug Slug a ser verificado.
      */
     async checkSlug(slug: string): Promise<{ slug: boolean; id_loja: string }> {
-        const response = await api.post('account/get_slug', { slug });
+        const response = await api.get(`account/get_slug/${slug}`);
         return response.data;
     }
 }

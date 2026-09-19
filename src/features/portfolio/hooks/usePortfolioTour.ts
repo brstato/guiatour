@@ -109,7 +109,7 @@ export const PORTFOLIO_TOUR_STEPS: TourStep[] = [
 ];
 
 export function usePortfolioTour(userId?: string | null, isLoading = false) {
-    const storageKey = userId ? `inkers_portfolio_tour_${userId}` : 'inkers_portfolio_tour_default';
+    const storageKey = userId ? `guia_tour_${userId}` : 'guia_tour_default';
     const [isOpen, setIsOpen] = useState(false);
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
 

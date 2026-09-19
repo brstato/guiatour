@@ -219,22 +219,22 @@ export function PortfolioSpotlightTour({
                         width: cutout.width,
                         height: cutout.height,
                     }}
-                    className="fixed rounded-[32px] border-2 border-[#F7931E] pointer-events-none shadow-[0_0_35px_rgba(247,147,30,0.55)] transition-all duration-300 ease-out z-[101] animate-pulse"
+                    className="fixed rounded-[32px] border-2 border-[#2563eb] pointer-events-none shadow-[0_0_35px_rgba(37,99,235,0.45)] transition-all duration-300 ease-out z-[101] animate-pulse"
                 />
             )}
 
             {/* Balão / Card Flutuante de Dicas Visuais */}
             <div
                 style={popoverPositionStyle}
-                className="z-[102] w-[calc(100%-2rem)] max-w-lg bg-[#141a2b] border border-[#F7931E]/40 text-white rounded-[2rem] p-5 sm:p-6 shadow-2xl shadow-black/95 backdrop-blur-xl animate-in fade-in slide-in-from-bottom-3 duration-200 max-h-[calc(100vh-110px)] overflow-y-auto"
+                className="z-[102] w-[calc(100%-2rem)] max-w-lg bg-white/95 border border-blue-100 text-slate-900 rounded-[2rem] p-5 sm:p-6 shadow-2xl shadow-slate-900/15 backdrop-blur-xl animate-in fade-in slide-in-from-bottom-3 duration-200 max-h-[calc(100vh-110px)] overflow-y-auto"
             >
                 {/* Header do Card */}
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-200/80">
                     <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-xl bg-[#F7931E]/20 flex items-center justify-center text-[#F7931E]">
+                        <div className="w-7 h-7 rounded-xl bg-blue-50 border border-blue-100/80 flex items-center justify-center text-[#2563eb]">
                             <Sparkles className="w-4 h-4" />
                         </div>
-                        <span className="text-[11px] font-black uppercase tracking-widest text-[#F7931E]">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-[#2563eb]">
                             Passo {stepIndex + 1} de {totalSteps} • {step.badge}
                         </span>
                     </div>
@@ -251,10 +251,10 @@ export function PortfolioSpotlightTour({
                                     className={cn(
                                         "h-1.5 rounded-full transition-all duration-300 cursor-pointer",
                                         i === stepIndex
-                                            ? "w-5 bg-[#F7931E]"
+                                            ? "w-5 bg-[#2563eb]"
                                             : i < stepIndex
-                                                ? "w-1.5 bg-slate-600 hover:bg-slate-500"
-                                                : "w-1.5 bg-slate-800 hover:bg-slate-700"
+                                                ? "w-1.5 bg-blue-300 hover:bg-blue-400"
+                                                : "w-1.5 bg-slate-200 hover:bg-slate-300"
                                     )}
                                 />
                             ))}
@@ -263,7 +263,7 @@ export function PortfolioSpotlightTour({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="w-8 h-8 rounded-full bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                            className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
                             title="Fechar guia"
                         >
                             <X className="w-4 h-4" />
@@ -273,24 +273,24 @@ export function PortfolioSpotlightTour({
 
                 {/* Conteúdo: Título e Descrição */}
                 <div className="mt-3 space-y-1">
-                    <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                         {step.title}
                     </h3>
-                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                         {step.description}
                     </p>
                 </div>
 
                 {/* Dicas de preenchimento */}
-                <div className="mt-3 bg-slate-900/80 border border-slate-800 rounded-2xl p-3 sm:p-3.5 space-y-2">
-                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#F7931E]">
+                <div className="mt-3 bg-blue-50/60 border border-blue-100/80 rounded-2xl p-3 sm:p-3.5 space-y-2">
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-[#2563eb]">
                         <Lightbulb className="w-3.5 h-3.5" />
                         <span>Dicas práticas para esta seção:</span>
                     </div>
-                    <ul className="space-y-1.5 text-xs text-slate-300">
+                    <ul className="space-y-1.5 text-xs text-slate-700">
                         {step.tips.map((tip, idx) => (
                             <li key={idx} className="flex items-start gap-2 leading-relaxed">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-[#F7931E] shrink-0 mt-0.5" />
+                                <CheckCircle2 className="w-3.5 h-3.5 text-[#2563eb] shrink-0 mt-0.5" />
                                 <span>{tip}</span>
                             </li>
                         ))}
@@ -302,7 +302,7 @@ export function PortfolioSpotlightTour({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="text-xs text-slate-400 hover:text-white transition-colors cursor-pointer py-2 px-1 font-medium"
+                        className="text-xs text-slate-500 hover:text-slate-900 transition-colors cursor-pointer py-2 px-1 font-medium"
                     >
                         Pular tour
                     </button>
@@ -314,7 +314,7 @@ export function PortfolioSpotlightTour({
                                 variant="outline"
                                 size="sm"
                                 onClick={onPrev}
-                                className="border-slate-700 bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl h-9 px-3.5 text-xs"
+                                className="border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 rounded-xl h-9 px-3.5 text-xs shadow-xs"
                             >
                                 <ChevronLeft className="w-3.5 h-3.5 mr-1" />
                                 Anterior
@@ -325,7 +325,7 @@ export function PortfolioSpotlightTour({
                             type="button"
                             size="sm"
                             onClick={onNext}
-                            className="bg-[#F7931E] text-slate-950 font-bold hover:bg-[#F7931E]/90 rounded-xl h-9 px-4 text-xs shadow-lg shadow-[#F7931E]/20"
+                            className="bg-[#2563eb] text-white font-bold hover:bg-[#1d4ed8] rounded-xl h-9 px-4 text-xs shadow-lg shadow-blue-500/20 cursor-pointer"
                         >
                             <span>{isLast ? 'Concluir Guia' : 'Próxima Seção'}</span>
                             {!isLast && <ChevronRight className="w-3.5 h-3.5 ml-1" />}

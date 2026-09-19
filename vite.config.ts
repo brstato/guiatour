@@ -17,7 +17,7 @@ export default defineConfig({
   server: {
     host: true, // Configuração para aceitar conexões externas
     port: 8088,
-    allowedHosts: ["dev-pages.inkers.com.br"], // Permite acessar via este domínio
+    allowedHosts: ["pages.guiatour.online"], // Permite acessar via este domínio
   },
   build: {
     sourcemap: true,

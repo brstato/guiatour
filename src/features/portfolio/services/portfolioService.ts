@@ -13,7 +13,14 @@ class PortfolioService {
      */
     private cleanUrl(url: string): string {
         if (!url) return "";
-        return url.split(".com.br").pop()?.replace(/\/\//g, "/") || "";
+        try {
+            if (url.startsWith("http")) {
+                return new URL(url).pathname;
+            }
+        } catch {
+            // fallback
+        }
+        return url.replace(/^https?:\/\/[^\/]+/, "").replace(/\/\//g, "/") || "";
     }
 
     /**
@@ -31,8 +38,10 @@ class PortfolioService {
      * @param payload Objeto contendo os campos parciais a serem atualizados.
      */
     async updatePortfolio(payload: Partial<PortfolioData>): Promise<any> {
+        const idLoja = localStorage.getItem("id") || "";
         const cleanedPayload = {
             ...payload,
+            id_loja: idLoja,
             avatar: this.cleanUrl(payload.avatar || ""),
             foto_bio: this.cleanUrl(payload.foto_bio || ""),
             foto_capa: this.cleanUrl(payload.foto_capa || ""),
@@ -106,24 +115,6 @@ class PortfolioService {
      */
     async removeFoto(idFoto: number): Promise<any> {
         const response = await api.post('portfolio/remove', { id_foto: idFoto });
-        return response.data;
-    }
-
-    /**
-     * Atualiza um item de cuidados pós tattoo.
-     * @param payload Dados do item (id_item, id_site, descricao).
-     */
-    async updatePosTattoo(payload: { id_item: number; id_site: number; descricao: string }): Promise<any> {
-        const response = await api.post('portfolio/update_pos_tattoo', payload);
-        return response.data;
-    }
-
-    /**
-     * Remove um item de cuidados pós tattoo.
-     * @param idCuidado ID do cuidado a ser removido.
-     */
-    async removeCuidado(idCuidado: number): Promise<any> {
-        const response = await api.post('portfolio/remove-cuidado', { id_cuidado: idCuidado });
         return response.data;
     }
 }

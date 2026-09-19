@@ -1,6 +1,9 @@
-# Pages - Documentação do Projeto
+# GuiaTour - Documentação do Projeto
 
-Ecosistema de gestão para tatuadores e estúdios profissionais, permitindo gerenciamento dinâmico de portfólio, métricas de visibilidade (Google Search e Google Maps), agendamentos, anamnese e configurações avançadas de perfil e marketing.
+> **Nota de Origem / Fork:**  
+> Este projeto é um fork de **`pages.inkers`**, com o nome atual de **GuiaTour** (`pages.guiatour`). Trata-se da plataforma de gestão de páginas, presença digital, portfólio dinâmico e métricas de desempenho.
+
+Ecosistema de gestão para profissionais e estúdios, permitindo gerenciamento dinâmico de portfólio, métricas de visibilidade (Google Search e Google Maps), agendamentos, anamnese e configurações avançadas de perfil e marketing.
 
 ---
 
@@ -26,7 +29,7 @@ Ecosistema de gestão para tatuadores e estúdios profissionais, permitindo gere
 
 ## 🏗️ Visão Geral e Arquitetura
 
-O projeto foi desenvolvido em **React 19**, **TypeScript** e **Tailwind CSS v4**, empregando uma arquitetura **Feature-Based** (baseada em módulos de domínio funcionais). Cada funcionalidade possui seu próprio subdiretório contendo páginas, componentes, hooks (controllers) e serviços de dados.
+O projeto **GuiaTour** foi desenvolvido em **React 19**, **TypeScript** e **Tailwind CSS v4**, empregando uma arquitetura **Feature-Based** (baseada em módulos de domínio funcionais). Cada funcionalidade possui seu próprio subdiretório contendo páginas, componentes, hooks (controllers) e serviços de dados.
 
 ### Ciclo de Interação de Dados
 
@@ -101,8 +104,11 @@ O projeto foi desenvolvido em **React 19**, **TypeScript** e **Tailwind CSS v4**
 │       │   ├── components/       # PortfolioSpotlightTour
 │       │   └── pages/            # PortfolioPage, MetricasPage
 │       ├── anamnesis/            # Módulo de Anamnese (estrutura inicial)
+│       │   └── types.ts
 │       ├── artists/              # Módulo de Artistas (estrutura inicial)
+│       │   └── types.ts
 │       └── scheduling/           # Módulo de Agendamentos (estrutura inicial)
+│           └── types.ts
 ```
 
 ---
@@ -163,7 +169,7 @@ Centraliza a árvore de rotas da aplicação usando o `createBrowserRouter` do `
 #### `src/services/api.ts`
 Configuração centralizada do cliente HTTP Axios, regras de URL base por ambiente e interceptores de autenticação com tratamento de renovação de sessão.
 - **Constantes:**
-  - `baseURL`: Determina a URL base priorizando `VITE_API_URL` ou alternando entre produção (`https://api.inkers.com.br/api/v1/`) e desenvolvimento (`https://dev-api.inkers.com.br/api/v1/`).
+  - `baseURL`: Determina a URL base priorizando `VITE_API_URL` (definida nos arquivos `.env`, como `https://api.guiatour.online/api/v1/`) ou alternando entre produção e desenvolvimento.
   - `api`: Instância do Axios com timeout de 60 segundos e cabeçalho padrão `application/json`.
 - **Funções e Interceptores:**
   - `api.interceptors.request.use(...)`: Injeta o cabeçalho `Authorization: Bearer <token>` a partir do valor armazenado no `localStorage`.
@@ -191,7 +197,7 @@ Declaração de interfaces e contratos de dados trocados com o backend:
 ### 4. Utilitários (`src/lib/`)
 
 #### `src/lib/image-utils.ts`
-Utilitário para manipulação e compressão de imagens no lado do cliente.
+Utilitário para manipulação, conversão (incluindo suporte nativo a HEIC no iOS) e compressão de imagens via Canvas no lado do cliente.
 - **Funções:**
   - `compressImage(base64: string, maxWidth = 1920, maxHeight = 1080, quality = 0.7): Promise<string>`:
     - Carrega uma imagem base64 em um elemento `Image`.
@@ -202,7 +208,7 @@ Utilitário para manipulação e compressão de imagens no lado do cliente.
 #### `src/lib/utils.ts`
 Utilitário para unificação e resolução de classes CSS.
 - **Funções:**
-  - `cn(...inputs: ClassValue[])`: Mescla classes condicionais do `clsx` com o resolução de conflitos de especificidade do `tailwind-merge`.
+  - `cn(...inputs: ClassValue[])`: Mescla classes condicionais do `clsx` com a resolução de conflitos de especificidade do `tailwind-merge`.
 
 ---
 
@@ -213,7 +219,7 @@ Layout mestre para as áreas autenticadas do sistema.
 - **Componente `AppLayout()`:**
   - Recupera métodos de autenticação de `useAuthController` (`handleLogout`) e conta de `useAccountController` (`data: account`, `loadData: loadAccount`).
   - Carrega os dados da conta do usuário logado via `useEffect`.
-  - Renderiza o cabeçalho superior com a marca Inkers, link externo para visualização da página pública (`https://<slug>.inkers.com.br`) e botão de encerramento de sessão.
+  - Renderiza o cabeçalho superior com a identidade da aplicação GuiaTour, link externo para visualização da página pública do perfil e botão de encerramento de sessão.
   - Provê o elemento `<Outlet />` para renderização das rotas filhas.
 
 #### `src/layouts/PerfilLayout.tsx`
@@ -291,7 +297,7 @@ Controller responsável por orquestrar fluxos de login, recuperação de senha, 
 #### `src/features/auth/pages/LoginPage.tsx`
 Página de entrada e autenticação de usuários.
 - **Componente `LoginPage()`:**
-  - Renderiza o logotipo da marca Inkers e slogan.
+  - Renderiza o logotipo e título da plataforma GuiaTour.
   - Oferece botão de login facilitado via Google OAuth (`handleLoginGoogle`).
   - Disponibiliza link direto para suporte via WhatsApp.
   - Contém formulário para login com e-mail e senha.
@@ -371,7 +377,7 @@ Controller central da tela de edição de portfólio.
     - `handleDeleteCuidado(idItem: number)`: Remove o item de cuidado localmente e chama o serviço de exclusão.
 
 #### `src/features/portfolio/hooks/useMetricas.ts`
-Hook customizado baseado em React Query para busca e cache de estatísticas e métricas de desempenho do tatuador.
+Hook customizado baseado em React Query para busca e cache de estatísticas e métricas de desempenho.
 - **Interfaces:** `MetricasResponse` (visibilidade, ações e posicionamento de termos de busca).
 - **Função Hook `useMetricas(tatuadorId: string | undefined)`:**
   - Configura consulta React Query (`queryKey: ["metricas", id]`) chamando o endpoint `/tatuadores/:id/metricas`.
@@ -418,7 +424,7 @@ Visão principal de gerenciamento do portfólio do profissional.
     - **Trabalhos:** Galeria de imagens com upload e confirmação de exclusão em modal.
     - **Cuidados pós tattoo:** Lista dinâmica de instruções de cicatrização.
     - **Configurações Avançadas:** Google Analytics, Meta Pixel, Google Ads e horários semanais de funcionamento.
-  - Botão de acesso direto à página pública do artista ativado apenas quando todas as seções obrigatórias estiverem completas.
+  - Botão de acesso direto à página pública do profissional ativado apenas quando todas as seções obrigatórias estiverem completas.
 
 #### `src/features/portfolio/pages/MetricasPage.tsx`
 Painel com indicadores de desempenho e conversão do perfil público.
@@ -435,7 +441,7 @@ Painel com indicadores de desempenho e conversão do perfil público.
 
 Arquivos de definição previstos para expansão dos serviços da plataforma:
 - `src/features/anamnesis/types.ts`: Tipagens para fichas de anamnese e termos de consentimento pré-procedimento.
-- `src/features/artists/types.ts`: Tipagens para gestão de múltiplos tatuadores em estúdios compartilhados.
+- `src/features/artists/types.ts`: Tipagens para gestão de múltiplos profissionais em estúdios compartilhados.
 - `src/features/scheduling/types.ts`: Tipagens para agenda de horários, sessões e reservas online.
 
 ---
@@ -446,16 +452,16 @@ Arquivos de definição previstos para expansão dos serviços da plataforma:
    ```bash
    npm install
    ```
-2. Configure o arquivo `.env` a partir de `.env.example`:
+2. Configure as variáveis de ambiente no arquivo `.env.development` ou `.env`:
    ```env
-   VITE_API_URL=https://dev-api.inkers.com.br/api/v1/
+   VITE_API_URL=https://api.guiatour.online/api/v1/
    VITE_GOOGLE_CLIENT_ID=seu_google_client_id_aqui
    ```
 3. Inicie o servidor de desenvolvimento:
    ```bash
    npm run dev
    ```
-4. Para checar tipos e compilar:
+4. Para checar tipos e compilar para produção:
    ```bash
    npm run build
    ```

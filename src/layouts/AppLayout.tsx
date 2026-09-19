@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import { LogOut, Feather, ExternalLink } from "lucide-react";
+import { LogOut, MapPin, ExternalLink } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useAuthController } from "@/features/auth/hooks/useAuthController";
 import { useAccountController } from "@/features/settings/hooks/useAccountController";
@@ -22,21 +22,21 @@ export function AppLayout() {
     }
   }, [loadAccount, account]);
 
-  const publicUrl = account?.slug ? `https://${account.slug}.inkers.com.br` : "#";
+  const publicUrl = account?.slug ? `https://${account.slug}.guiatour.online` : "#";
 
   return (
-    <div className="h-screen bg-[#0f1420] flex flex-col relative overflow-hidden">
-      {/* Elementos decorativos de fundo (efeito de brilho) */}
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#F7931E]/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-[#F7931E]/5 rounded-full blur-2xl pointer-events-none" />
+    <div className="h-screen bg-slate-50 bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-100 flex flex-col relative overflow-hidden text-slate-900">
+      {/* Elementos decorativos de fundo (efeito de brilho e degradê suave) */}
+      <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
 
       {/* Header com Logout */}
-      <header className="z-20 flex items-center justify-between px-6 py-4 bg-[#141a2b]/40 backdrop-blur-md border-b border-slate-800/50">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#F7931E]/10 rounded-lg flex items-center justify-center">
-            <Feather className="h-5 w-5 text-[#F7931E]" />
+      <header className="z-20 flex items-center justify-between px-6 py-4 bg-white/80 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 bg-blue-50 border border-blue-100/80 rounded-lg flex items-center justify-center shadow-xs">
+            <MapPin className="h-4.5 w-4.5 text-[#2563eb]" />
           </div>
-          <span className="text-white font-bold tracking-tight uppercase text-sm">Inkers</span>
+          <span className="text-slate-900 font-extrabold tracking-tight uppercase text-sm">Guia Tour</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -46,7 +46,7 @@ export function AppLayout() {
             rel="noopener noreferrer"
             className={cn(
               buttonVariants({ variant: "ghost", size: "sm" }),
-              "text-[#8a94a6] hover:text-white hover:bg-white/5 h-8 w-8 p-0 sm:w-auto sm:px-3 transition-colors"
+              "text-slate-600 hover:text-blue-600 hover:bg-blue-50/80 h-8 w-8 p-0 sm:w-auto sm:px-3 transition-colors font-medium"
             )}
           >
             <ExternalLink className="h-4 w-4 sm:mr-2" />
@@ -57,7 +57,7 @@ export function AppLayout() {
             variant="ghost"
             size="sm"
             onClick={handleLogout}
-            className="text-[#8a94a6] hover:text-white hover:bg-white/5 h-8 w-8 p-0 sm:w-auto sm:px-3 gap-2 transition-colors group"
+            className="text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 h-8 w-8 p-0 sm:w-auto sm:px-3 gap-2 transition-colors group font-medium"
           >
             <span className="hidden sm:inline text-xs font-medium">Sair</span>
             <LogOut className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
