@@ -25,12 +25,11 @@ class PortfolioService {
     }
 
     /**
-     * Busca os dados completos do portfólio de um lojista.
-     * @param idLoja Identificador único da loja/artista.
+     * Busca os dados completos do portfólio do lojista autenticado.
      * @returns Promessa com os dados do portfólio.
      */
-    async getPortfolioData(idLoja: string): Promise<PortfolioData> {
-        const response = await api.get(`portfolio/info/${idLoja}`);
+    async getPortfolioData(): Promise<PortfolioData> {
+        const response = await api.get('portfolio/info');
         return response.data;
     }
 

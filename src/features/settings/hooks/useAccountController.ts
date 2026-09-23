@@ -27,13 +27,12 @@ export function useAccountController() {
 
     /**
      * Carrega os dados da conta do usuário.
-     * @param id ID do usuário.
      */
-    const loadData = useCallback(async (id: string) => {
+    const loadData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const result = await accountService.getAccountData(id);
+            const result = await accountService.getAccountData();
             setData(result);
             await loadCategorias();
         } catch (err) {
@@ -56,8 +55,7 @@ export function useAccountController() {
         } catch (err) {
             console.error("Erro ao atualizar conta:", err);
             setError("Erro ao atualizar dados da conta.");
-            const id = localStorage.getItem("id_loja") || "";
-            await loadData(id);
+            await loadData();
         }
     };
 
@@ -91,8 +89,7 @@ export function useAccountController() {
             console.error("Erro ao atualizar dados básicos:", err);
             const status = err.response?.status;
             setError(status === 409 ? "Este apelido já está em uso." : "Erro ao atualizar dados básicos da conta.");
-            const id = localStorage.getItem("id_loja") || "";
-            await loadData(id);
+            await loadData();
             return { success: false, status };
         }
     };
@@ -120,8 +117,7 @@ export function useAccountController() {
         } catch (err) {
             console.error("Erro ao atualizar contato:", err);
             setError("Erro ao atualizar dados de contato.");
-            const id = localStorage.getItem("id_loja") || "";
-            await loadData(id);
+            await loadData();
         }
     };
 
@@ -138,8 +134,7 @@ export function useAccountController() {
         } catch (err) {
             console.error("Erro ao atualizar endereço:", err);
             setError("Erro ao atualizar endereço.");
-            const id = localStorage.getItem("id_loja") || "";
-            await loadData(id);
+            await loadData();
         }
     };
 
@@ -163,8 +158,7 @@ export function useAccountController() {
         } catch (err) {
             console.error("Erro ao atualizar configurações avançadas:", err);
             setError("Erro ao atualizar configurações avançadas.");
-            const id = localStorage.getItem("id_loja") || "";
-            await loadData(id);
+            await loadData();
         }
     };
 

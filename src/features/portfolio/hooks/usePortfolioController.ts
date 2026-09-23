@@ -18,12 +18,11 @@ export function usePortfolioController() {
 
     /**
      * Carrega os dados do portfólio a partir da API.
-     * @param idLoja ID da loja/artista para busca.
      */
-    const loadData = useCallback(async (idLoja: string) => {
+    const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const result = await portfolioService.getPortfolioData(idLoja);
+            const result = await portfolioService.getPortfolioData();
             setData(result);
         } catch (error) {
             // Se for 404, define um estado inicial vazio para evitar erros de UI e logs excessivos
@@ -56,8 +55,7 @@ export function usePortfolioController() {
             await portfolioService.updatePortfolio(payload);
         } catch (error) {
             console.error("Erro ao atualizar portfólio:", error);
-            const idLoja = localStorage.getItem("id_loja") || "";
-            await loadData(idLoja);
+            await loadData();
         }
     };
 
@@ -82,8 +80,7 @@ export function usePortfolioController() {
             await portfolioService.updatePortfolioBasico(mergedData);
         } catch (error) {
             console.error("Erro ao atualizar portfólio básico:", error);
-            const idLoja = localStorage.getItem("id_loja") || "";
-            await loadData(idLoja);
+            await loadData();
         }
     };
 
@@ -155,15 +152,13 @@ export function usePortfolioController() {
             else await portfolioService.uploadFoto(payload);
 
             // Atualiza os dados em background para obter as URLs finais do servidor sem travar a UI
-            const idLoja = localStorage.getItem("id_loja") || "";
-            const result = await portfolioService.getPortfolioData(idLoja);
+            const result = await portfolioService.getPortfolioData();
             setData(result);
         } catch (error) {
             console.error(`Erro no upload de ${type}:`, error);
             // Reverte em caso de erro
-            const idLoja = localStorage.getItem("id_loja") || "";
             try {
-                const result = await portfolioService.getPortfolioData(idLoja);
+                const result = await portfolioService.getPortfolioData();
                 setData(result);
             } catch (reError) {
                 console.error("Erro ao reverter dados:", reError);
@@ -186,14 +181,12 @@ export function usePortfolioController() {
         try {
             await portfolioService.removeFoto(idFoto);
             // Atualiza em background
-            const idLoja = localStorage.getItem("id_loja") || "";
-            const result = await portfolioService.getPortfolioData(idLoja);
+            const result = await portfolioService.getPortfolioData();
             setData(result);
         } catch (error) {
             console.error("Erro ao deletar foto:", error);
             // Reverte em caso de erro
-            const idLoja = localStorage.getItem("id_loja") || "";
-            const result = await portfolioService.getPortfolioData(idLoja);
+            const result = await portfolioService.getPortfolioData();
             setData(result);
         }
     };

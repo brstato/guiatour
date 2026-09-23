@@ -8,10 +8,9 @@ import type { AccountData, AddressData } from '@/types/api';
 class AccountService {
     /**
      * Busca os dados completos da conta do usuário.
-     * @param id Identificador do usuário.
      */
-    async getAccountData(id: string): Promise<AccountData> {
-        const response = await api.get(`account/get_data/${id}`);
+    async getAccountData(): Promise<AccountData> {
+        const response = await api.get('account/get_data');
         return response.data;
     }
 

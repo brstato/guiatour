@@ -423,12 +423,9 @@ export function PortfolioPage() {
     };
 
     useEffect(() => {
-        const id = localStorage.getItem("id_loja") || localStorage.getItem("id");
-        if (id) {
-            loadAccount(id);
-            loadPortfolio(id);
-            loadDepoimentos();
-        }
+        loadAccount();
+        loadPortfolio();
+        loadDepoimentos();
     }, [loadAccount, loadPortfolio, loadDepoimentos]);
 
     const statusApresentacao = useMemo((): SectionStatus => {
@@ -558,7 +555,11 @@ export function PortfolioPage() {
                             label="Nome"
                             value={account?.nome}
                             maxLength={100}
-                            onSave={(val) => handleUpdateBasico({ nome: val, apelido: account?.slug })}
+                            onSave={(val) => handleUpdateBasico({ 
+                                nome: val, 
+                                apelido: account?.slug, 
+                                id_categoria: account?.id_categoria ?? account?.categoria_id 
+                            })}
                         />
                         <EditableField
                             label="Apelido"
@@ -567,7 +568,11 @@ export function PortfolioPage() {
                             error={slugError}
                             onSave={async (val) => {
                                 setSlugError(null);
-                                const result = await handleUpdateBasico({ nome: account?.nome, apelido: val });
+                                const result = await handleUpdateBasico({ 
+                                    nome: account?.nome, 
+                                    apelido: val, 
+                                    id_categoria: account?.id_categoria ?? account?.categoria_id 
+                                });
                                 if (result && !result.success && result.status === 409) {
                                     setSlugError("Este nome de usuário não está disponível");
                                 }
