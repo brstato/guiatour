@@ -28,7 +28,7 @@ class AccountService {
      * Atualiza dados básicos do perfil (nome e apelido).
      * @param data Objeto com nome e/ou apelido.
      */
-    async updateAccountBasico(data: { nome?: string; apelido?: string }): Promise<any> {
+    async updateAccountBasico(data: { nome?: string; apelido?: string; id_categoria?: number }): Promise<any> {
         const response = await api.post('account/update_account_basico', data);
         return response.data;
     }
@@ -77,6 +77,14 @@ class AccountService {
             horario: data.horario ?? {},
         };
         const response = await api.post('account/update_configuracoes_avancadas', payload);
+        return response.data;
+    }
+
+    /**
+     * Busca a lista de categorias disponíveis para os nichos de comércio.
+     */
+    async getCategorias(): Promise<{ itens: Array<{ categoria_id: number; categoria_nome: string }> }> {
+        const response = await api.get('account/get_categorias');
         return response.data;
     }
 

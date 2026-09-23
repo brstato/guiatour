@@ -19,7 +19,9 @@ import {
     Trash2,
     AlertCircle,
     Sparkles,
-    HelpCircle
+    HelpCircle,
+    MessageSquare,
+    Star
 } from 'lucide-react';
 import { usePortfolioTour } from '../hooks/usePortfolioTour';
 import { PortfolioSpotlightTour } from '../components/PortfolioSpotlightTour';
@@ -149,7 +151,8 @@ function EditableField({
     multiline = false,
     numericOnly = false,
     maxLength,
-    theme = "light"
+    theme = "light",
+    error
 }: {
     label: string;
     value: string | undefined;
@@ -158,6 +161,7 @@ function EditableField({
     numericOnly?: boolean;
     maxLength?: number;
     theme?: "light" | "dark";
+    error?: string | null;
 }) {
     const [localValue, setLocalValue] = useState(value || '');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -208,7 +212,8 @@ function EditableField({
                     onBlur={handleBlur}
                     className={cn(
                         "w-full bg-transparent border-none p-0 text-sm font-medium focus:outline-none focus:border-b-2 focus:border-[#2563eb] transition-none resize-none overflow-hidden",
-                        isDark ? "text-white placeholder:text-white/40" : "text-slate-900 placeholder:text-slate-400"
+                        isDark ? "text-white placeholder:text-white/40" : "text-slate-900 placeholder:text-slate-400",
+                        error && "text-red-500"
                     )}
                 />
             ) : (
@@ -224,9 +229,81 @@ function EditableField({
                     onBlur={handleBlur}
                     className={cn(
                         "bg-transparent border-none p-0 h-auto text-sm font-semibold focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-[#2563eb] rounded-none transition-none shadow-none",
-                        isDark ? "text-white placeholder:text-white/40" : "text-slate-900 placeholder:text-slate-400"
+                        isDark ? "text-white placeholder:text-white/40" : "text-slate-900 placeholder:text-slate-400",
+                        error && "text-red-500 border-b-2 border-red-500"
                     )}
                 />
+            )}
+            {error && (
+                <p className="text-[10px] text-red-500 font-bold mt-1 animate-in fade-in slide-in-from-top-1">
+                    {error}
+                </p>
+            )}
+        </div>
+    );
+}
+
+function EditableSelect({
+    label,
+    value,
+    options,
+    onSave,
+    theme = "light",
+    error
+}: {
+    label: string;
+    value: string | number | undefined;
+    options: Array<{ id: string | number, name: string }>;
+    onSave: (val: string) => void;
+    theme?: "light" | "dark";
+    error?: string | null;
+}) {
+    const [localValue, setLocalValue] = useState(value || '');
+
+    useEffect(() => {
+        setLocalValue(value || '');
+    }, [value]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const val = e.target.value;
+        setLocalValue(val);
+        onSave(val);
+    };
+
+    const isDark = theme === "dark";
+
+    return (
+        <div className="mb-3.5 last:mb-0">
+            <div className="flex justify-between items-center mb-1">
+                <p className={cn(
+                    "text-xs uppercase tracking-wide font-semibold",
+                    isDark ? "text-white/70" : "text-slate-500"
+                )}>
+                    {label}
+                </p>
+            </div>
+            <div className="relative">
+                <select
+                    value={localValue}
+                    onChange={handleChange}
+                    className={cn(
+                        "w-full bg-transparent border-none p-0 h-auto text-sm font-semibold focus:outline-none focus:border-b-2 focus:border-[#2563eb] rounded-none transition-none shadow-none appearance-none cursor-pointer",
+                        isDark ? "text-white" : "text-slate-900",
+                        error && "text-red-500 border-b-2 border-red-500"
+                    )}
+                >
+                    <option value="" disabled className={isDark ? "bg-slate-800" : "bg-white"}>Selecione uma categoria</option>
+                    {options.map(opt => (
+                        <option key={opt.id} value={opt.id} className={isDark ? "bg-slate-800 text-white" : "bg-white text-slate-900"}>
+                            {opt.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            {error && (
+                <p className="text-[10px] text-red-500 font-bold mt-1 animate-in fade-in slide-in-from-top-1">
+                    {error}
+                </p>
             )}
         </div>
     );
@@ -278,15 +355,20 @@ function ProgressRing({ progress, size = 112, strokeWidth = 6 }: { progress: num
 export function PortfolioPage() {
     const {
         data: portfolio,
+        depoimentos,
         isLoading: loadingPortfolio,
+        isLoadingDepoimentos,
         loadData: loadPortfolio,
+        loadDepoimentos,
         handleUpdateBasico: updatePortfolioBasico,
         handleUpload: uploadFile,
-        handleDeleteFoto
+        handleDeleteFoto,
+        handleAprovarDepoimento
     } = usePortfolioController();
 
     const {
         data: account,
+        categorias,
         isLoading: loadingAccount,
         loadData: loadAccount,
         handleUpdateBasico,
@@ -299,7 +381,8 @@ export function PortfolioPage() {
     const [photoToDelete, setPhotoToDelete] = useState<number | null>(null);
     const [cepError, setCepError] = useState<{ title: string, message: string } | null>(null);
     const [activeAccordion, setActiveAccordion] = useState<string | undefined>("apresentacao");
-    const [userId] = useState<string | null>(() => localStorage.getItem("id"));
+    const [userId] = useState<string | null>(() => localStorage.getItem("id_loja") || localStorage.getItem("id"));
+    const [slugError, setSlugError] = useState<string | null>(null);
 
     const {
         isOpen: isTourOpen,
@@ -340,12 +423,13 @@ export function PortfolioPage() {
     };
 
     useEffect(() => {
-        const id = localStorage.getItem("id");
+        const id = localStorage.getItem("id_loja") || localStorage.getItem("id");
         if (id) {
             loadAccount(id);
             loadPortfolio(id);
+            loadDepoimentos();
         }
-    }, [loadAccount, loadPortfolio]);
+    }, [loadAccount, loadPortfolio, loadDepoimentos]);
 
     const statusApresentacao = useMemo((): SectionStatus => {
         const isComplete = !!(portfolio?.titulo && portfolio?.subtitulo && portfolio?.bio);
@@ -480,7 +564,20 @@ export function PortfolioPage() {
                             label="Apelido"
                             value={account?.slug}
                             maxLength={100}
-                            onSave={(val) => handleUpdateBasico({ nome: account?.nome, apelido: val })}
+                            error={slugError}
+                            onSave={async (val) => {
+                                setSlugError(null);
+                                const result = await handleUpdateBasico({ nome: account?.nome, apelido: val });
+                                if (result && !result.success && result.status === 409) {
+                                    setSlugError("Este nome de usuário não está disponível");
+                                }
+                            }}
+                        />
+                        <EditableSelect
+                            label="Categoria"
+                            value={account?.id_categoria ?? account?.categoria_id}
+                            options={categorias.map(c => ({ id: c.categoria_id, name: c.categoria_nome }))}
+                            onSave={(val) => handleUpdateBasico({ nome: account?.nome, apelido: account?.slug, id_categoria: parseInt(val) })}
                         />
                         <div className="mt-2 flex items-center gap-2">
                             <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Perfil</span>
@@ -627,6 +724,7 @@ export function PortfolioPage() {
                                 }} />
                                 <EditableField label="Endereço" value={account?.endereco} onSave={(val) => handleUpdateEndereco({ endereco: val })} />
                                 <EditableField label="Número" value={account?.numero} onSave={(val) => handleUpdateEndereco({ numero: val })} />
+                                <EditableField label="Complemento" value={account?.complemento} onSave={(val) => handleUpdateEndereco({ complemento: val })} />
                                 <EditableField label="Bairro" value={account?.bairro} onSave={(val) => handleUpdateEndereco({ bairro: val })} />
                                 <EditableField label="Cidade" value={account?.cidade} onSave={(val) => handleUpdateEndereco({ cidade: val })} />
                                 <EditableField label="Estado" value={account?.estado} onSave={(val) => handleUpdateEndereco({ estado: val })} />
@@ -682,6 +780,77 @@ export function PortfolioPage() {
                         </AccordionContent>
                     </AccordionItem>
 
+                    <AccordionItem id="section-depoimentos" value="depoimentos" className="rounded-3xl border border-slate-200/80 bg-white px-6 overflow-hidden shadow-xs hover:border-blue-200/80 transition-colors">
+                        <AccordionTrigger className="py-5 hover:no-underline [&>svg]:text-slate-400">
+                            <div className="flex flex-1 items-center gap-4 pr-2">
+                                <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center">
+                                    <MessageSquare className="h-5 w-5 text-[#2563eb]" strokeWidth={2} />
+                                </div>
+                                <div className="flex-1 flex flex-col items-start">
+                                    <span className="text-lg font-bold text-slate-900">Depoimentos</span>
+                                    <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border bg-blue-50 text-[#2563eb] border-blue-200/70">
+                                        {depoimentos.length} novos
+                                    </span>
+                                </div>
+                                <SectionStatusIcon status={depoimentos.length > 0 ? "pending" : "complete"} />
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-6 pt-2 border-t border-slate-100">
+                            <div className="pt-4">
+                                {isLoadingDepoimentos ? (
+                                    <div className="flex justify-center py-8">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#2563eb]"></div>
+                                    </div>
+                                ) : depoimentos.length > 0 ? (
+                                    <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
+                                        {depoimentos.map((depoimento) => (
+                                            <div key={depoimento.id} className="min-w-[280px] max-w-[280px] bg-slate-50 rounded-2xl p-4 border border-slate-200 snap-center shadow-sm">
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 border border-white shadow-xs">
+                                                        {depoimento.foto_url ? (
+                                                            <img src={getImageUrl(depoimento.foto_url)} alt={depoimento.nome} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-xs">
+                                                                {depoimento.nome.charAt(0)}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-slate-900 line-clamp-1">{depoimento.nome}</p>
+                                                        <div className="flex gap-0.5">
+                                                            {Array.from({ length: 5 }).map((_, i) => (
+                                                                <Star key={i} className={cn("w-3 h-3", i < depoimento.nota ? "fill-yellow-400 text-yellow-400" : "text-slate-300")} />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs text-slate-600 line-clamp-3 italic mb-2">"{depoimento.texto}"</p>
+                                                <div className="flex items-center justify-between mt-auto">
+                                                    <p className="text-[10px] text-slate-400 font-medium">{depoimento.data}</p>
+                                                    <Button
+                                                        size="sm"
+                                                        className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase tracking-wider rounded-xl shadow-sm"
+                                                        onClick={() => handleAprovarDepoimento(depoimento.id)}
+                                                        disabled={isLoadingDepoimentos}
+                                                    >
+                                                        {isLoadingDepoimentos ? "Aprovando..." : "Aprovar"}
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 px-4">
+                                        <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                                            <MessageSquare className="w-6 h-6 text-slate-300" />
+                                        </div>
+                                        <p className="text-sm font-medium text-slate-500">Nenhum depoimento pendente no momento.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+
                     <AccordionItem id="section-config" value="config" className="rounded-3xl border border-slate-200/80 bg-white px-6 overflow-hidden shadow-xs hover:border-blue-200/80 transition-colors">
                         <AccordionTrigger className="py-5 hover:no-underline [&>svg]:text-slate-400">
                             <div className="flex flex-1 items-center gap-4 pr-2">
@@ -707,9 +876,9 @@ export function PortfolioPage() {
                         <AccordionContent className="pb-6 pt-2 border-t border-slate-100">
                             <div className="space-y-6 pt-4">
                                 <div className="space-y-4">
-                                    <EditableField label="Google Analytics ID" value={account?.google_analytics_id || account?.g_analytics_id} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: val, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: account?.google_ads_id, horario: account?.horario })} />
-                                    <EditableField label="Meta Pixel ID" value={account?.meta_pixel_id || account?.meta_pixel} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: account?.google_analytics_id || account?.g_analytics_id, meta_pixel_id: val, conta_google_ads: account?.google_ads_id, horario: account?.horario })} />
-                                    <EditableField label="Conta Google Ads" value={account?.google_ads_id} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: account?.google_analytics_id || account?.g_analytics_id, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: val, horario: account?.horario })} />
+                                    <EditableField label="Google Analytics ID" value={account?.g_analytcs} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: val, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: account?.conta_google_ads, horario: account?.horario })} />
+                                    <EditableField label="Meta Pixel ID" value={account?.meta_pixel_id || account?.meta_pixel} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: account?.g_analytcs, meta_pixel_id: val, conta_google_ads: account?.conta_google_ads, horario: account?.horario })} />
+                                    <EditableField label="Conta Google Ads" value={account?.conta_google_ads} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: account?.g_analytcs, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: val, horario: account?.horario })} />
                                 </div>
                                 <div className="pt-6 border-t border-slate-100">
                                     <div className="flex items-center gap-2 mb-6">
@@ -720,7 +889,7 @@ export function PortfolioPage() {
                                         {DAYS_MAP.map((day) => (
                                             <ScheduleItemEditor key={day.id} day={day} data={account?.horario?.[day.id]} onUpdate={(dayData) => {
                                                 const newHorario = { ...(account?.horario || {}), [day.id]: dayData };
-                                                updateAccountConfiguracoesAvancadas({ g_analytcs: account?.google_analytics_id || account?.g_analytics_id, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: account?.google_ads_id, horario: newHorario });
+                                                updateAccountConfiguracoesAvancadas({ g_analytcs: account?.g_analytcs, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: account?.conta_google_ads, horario: newHorario });
                                             }} />
                                         ))}
                                     </div>

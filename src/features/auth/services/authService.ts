@@ -29,6 +29,7 @@ class AuthService {
         token: '',
         rToken: '',
         userId: '',
+        idLoja: '',
         errorMessage: 'Não foi possível conectar ao servidor. Tente novamente mais tarde.',
       };
     }
@@ -55,6 +56,7 @@ class AuthService {
         token: '',
         rToken: '',
         userId: '',
+        idLoja: '',
         errorMessage: 'Não foi possível conectar ao servidor. Tente novamente mais tarde.',
       };
     }
@@ -81,6 +83,7 @@ class AuthService {
         token: '',
         rToken: '',
         userId: '',
+        idLoja: '',
         errorMessage: 'Não foi possível conectar ao servidor. Tente novamente mais tarde.',
       };
     }
@@ -155,6 +158,7 @@ class AuthService {
         token: response.data.token,
         rToken: response.data.r_token,
         userId: String(response.data.message?.id || ''),
+        idLoja: String(response.data.id_loja || ''),
         errorMessage: '',
       };
     }
@@ -171,6 +175,7 @@ class AuthService {
       token: '',
       rToken: '',
       userId: '',
+      idLoja: '',
       errorMessage: errorMessages[response.status] || 'Não foi possível realizar o login no momento. Tente novamente mais tarde.',
     };
   }

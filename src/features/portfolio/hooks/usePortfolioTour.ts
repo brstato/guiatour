@@ -19,9 +19,9 @@ export const PORTFOLIO_TOUR_STEPS: TourStep[] = [
         title: 'Capa, Avatar e Apelido',
         description: 'É a primeira impressão que seu cliente tem ao abrir sua página. Uma foto nítida e uma capa marcante aumentam significativamente a confiança.',
         tips: [
-            'Foto de perfil: use uma foto sua de alta resolução ou o logo do seu estúdio.',
+            'Foto de perfil: use uma foto sua de alta resolução ou o logo da sua loja.',
             'Foto de capa: escolha uma foto horizontal que represente seu ambiente de trabalho ou arte.',
-            'Apelido (Slug): define o link direto da sua página pública (ex: /tatuador/seu-nome).'
+            'Apelido (Slug): define o link direto da sua página pública (ex: seu-nome/guiatour.online).'
         ],
         importance: 'Obrigatório para transmitir profissionalismo instantâneo.'
     },
@@ -31,12 +31,12 @@ export const PORTFOLIO_TOUR_STEPS: TourStep[] = [
         targetElementId: 'section-apresentacao',
         badge: 'Apresentação',
         title: 'Título, Subtítulo e Biografia',
-        description: 'Conte quem você é, seus anos de experiência e suas especialidades no mundo da tatuagem.',
+        description: 'Conte quem é você, seus anos de experiência e suas especialidades.',
         tips: [
-            'Título: seu foco principal (ex: Especialista em Fineline & Floral).',
+            'Título: seu foco principal.',
             'Subtítulo: chamada atraente ou slogan que resuma seu diferencial.',
-            'Foto da Bio: foto no estúdio que humaniza seu atendimento.',
-            'Bio: conte sua trajetória artística, valores e como funciona seu processo criativo.'
+            'Foto da Bio: foto no seu ambiente que humaniza seu atendimento.',
+            'Bio: conte sua trajetória, valores e como funciona seu processo.'
         ],
         importance: 'Conecta emocionalmente com clientes indecisos.'
     },
@@ -49,7 +49,7 @@ export const PORTFOLIO_TOUR_STEPS: TourStep[] = [
         description: 'Os canais diretos para o cliente orçar e agendar sessões com você.',
         tips: [
             'Telefone/WhatsApp: verifique com atenção, pois é o botão principal de ação dos clientes.',
-            'Instagram: coloque apenas o arroba (sem @ ou link) para direcionamento correto.'
+            'Instagram: coloque apenas o link para direcionamento correto.'
         ],
         importance: 'Permite que o cliente inicie o orçamento em um clique.'
     },
@@ -58,11 +58,11 @@ export const PORTFOLIO_TOUR_STEPS: TourStep[] = [
         accordionValue: 'localizacao',
         targetElementId: 'section-localizacao',
         badge: 'Localização',
-        title: 'Endereço do Estúdio',
+        title: 'Endereço da  loja',
         description: 'Clientes buscam tatuadores próximos à sua região ou planejam deslocamento.',
         tips: [
             'Digite o CEP para preenchimento automático de rua, bairro, cidade e estado.',
-            'Adicione referências caso seu estúdio fique em galerias ou prédios comerciais.'
+            'Adicione referências caso sua loja fique em galerias ou prédios comerciais.'
         ],
         importance: 'Ajuda na indexação local e facilita a chegada do cliente.'
     },
@@ -72,26 +72,12 @@ export const PORTFOLIO_TOUR_STEPS: TourStep[] = [
         targetElementId: 'section-trabalhos',
         badge: 'Portfólio',
         title: 'Galeria de Trabalhos',
-        description: 'Sua vitrine visual. Mostre a qualidade do seu traço, cicatrização e versatilidade.',
+        description: 'Sua vitrine visual. Mostre a qualidade do seu trabalho.',
         tips: [
             'Cadastre no mínimo 4 fotos com boa luz e foco.',
-            'Fotos de tatuagens já cicatrizadas passam ainda mais autoridade técnica.',
             'Use fotos verticais ou quadradas nítidas.'
         ],
         importance: 'O fator decisivo para a conversão de novos clientes.'
-    },
-    {
-        id: 'pos-tattoo',
-        accordionValue: 'pos-tattoo',
-        targetElementId: 'section-pos-tattoo',
-        badge: 'Cuidados Pós-Tattoo',
-        title: 'Orientações de Cicatrização',
-        description: 'Instruções claras pós-procedimento demonstram zelo com a saúde e a cicatrização do trabalho.',
-        tips: [
-            'Orientações pós-tattoo reduzem dúvidas frequentes e passam extrema segurança.',
-            'Adicione instruções sobre lavagem, pomadas, exposição ao sol e cuidados nos primeiros dias.'
-        ],
-        importance: 'Demonstra autoridade e suporte pós-venda completo.'
     },
     {
         id: 'config',
@@ -99,7 +85,7 @@ export const PORTFOLIO_TOUR_STEPS: TourStep[] = [
         targetElementId: 'section-config',
         badge: 'Configurações Avançadas',
         title: 'Horários e Métricas',
-        description: 'Defina os horários de atendimento do estúdio e integre ferramentas de métricas e anúncios.',
+        description: 'Defina os horários de atendimento da sua loja e integre ferramentas de métricas e anúncios.',
         tips: [
             'Configure seus horários reais para alinhar a expectativa de resposta dos clientes.',
             'Adicione Google Analytics ou Meta Pixel se veicula anúncios para atrair novos clientes.'

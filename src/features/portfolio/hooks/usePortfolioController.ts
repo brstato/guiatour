@@ -1,7 +1,9 @@
 import { useState, useCallback } from 'react';
+import axios from 'axios';
 import { portfolioService } from '../services/portfolioService';
 import { compressImage } from '@/lib/image-utils';
 import type { PortfolioData } from '@/types/api';
+import type { Depoimento } from '../types';
 
 /**
  * Hook customizado que atua como Controller para a funcionalidade de Portfólio.
@@ -10,7 +12,9 @@ import type { PortfolioData } from '@/types/api';
  */
 export function usePortfolioController() {
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingDepoimentos, setIsLoadingDepoimentos] = useState(false);
     const [data, setData] = useState<PortfolioData | null>(null);
+    const [depoimentos, setDepoimentos] = useState<Depoimento[]>([]);
 
     /**
      * Carrega os dados do portfólio a partir da API.
@@ -22,7 +26,20 @@ export function usePortfolioController() {
             const result = await portfolioService.getPortfolioData(idLoja);
             setData(result);
         } catch (error) {
-            console.error("Erro ao carregar portfólio:", error);
+            // Se for 404, define um estado inicial vazio para evitar erros de UI e logs excessivos
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
+                setData({
+                    id_site: 0,
+                    titulo: "",
+                    subtitulo: "",
+                    bio: "",
+                    avatar: "",
+                    foto_bio: "",
+                    itens: []
+                } as PortfolioData);
+            } else {
+                console.error("Erro ao carregar portfólio:", error);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -39,7 +56,7 @@ export function usePortfolioController() {
             await portfolioService.updatePortfolio(payload);
         } catch (error) {
             console.error("Erro ao atualizar portfólio:", error);
-            const idLoja = localStorage.getItem("id") || "";
+            const idLoja = localStorage.getItem("id_loja") || "";
             await loadData(idLoja);
         }
     };
@@ -65,7 +82,7 @@ export function usePortfolioController() {
             await portfolioService.updatePortfolioBasico(mergedData);
         } catch (error) {
             console.error("Erro ao atualizar portfólio básico:", error);
-            const idLoja = localStorage.getItem("id") || "";
+            const idLoja = localStorage.getItem("id_loja") || "";
             await loadData(idLoja);
         }
     };
@@ -138,13 +155,13 @@ export function usePortfolioController() {
             else await portfolioService.uploadFoto(payload);
 
             // Atualiza os dados em background para obter as URLs finais do servidor sem travar a UI
-            const idLoja = localStorage.getItem("id") || "";
+            const idLoja = localStorage.getItem("id_loja") || "";
             const result = await portfolioService.getPortfolioData(idLoja);
             setData(result);
         } catch (error) {
             console.error(`Erro no upload de ${type}:`, error);
             // Reverte em caso de erro
-            const idLoja = localStorage.getItem("id") || "";
+            const idLoja = localStorage.getItem("id_loja") || "";
             try {
                 const result = await portfolioService.getPortfolioData(idLoja);
                 setData(result);
@@ -169,25 +186,59 @@ export function usePortfolioController() {
         try {
             await portfolioService.removeFoto(idFoto);
             // Atualiza em background
-            const idLoja = localStorage.getItem("id") || "";
+            const idLoja = localStorage.getItem("id_loja") || "";
             const result = await portfolioService.getPortfolioData(idLoja);
             setData(result);
         } catch (error) {
             console.error("Erro ao deletar foto:", error);
             // Reverte em caso de erro
-            const idLoja = localStorage.getItem("id") || "";
+            const idLoja = localStorage.getItem("id_loja") || "";
             const result = await portfolioService.getPortfolioData(idLoja);
             setData(result);
         }
     };
 
+    /**
+     * Carrega os depoimentos pendentes.
+     */
+    const loadDepoimentos = useCallback(async () => {
+        setIsLoadingDepoimentos(true);
+        try {
+            const result = await portfolioService.getDepoimentosPendentes();
+            setDepoimentos(result);
+        } catch (error) {
+            console.error("Erro ao carregar depoimentos:", error);
+        } finally {
+            setIsLoadingDepoimentos(false);
+        }
+    }, []);
+
+    /**
+     * Aprova um depoimento e recarrega a lista de pendentes.
+     * @param idDepoimento ID do depoimento a ser aprovado.
+     */
+    const handleAprovarDepoimento = async (idDepoimento: number) => {
+        setIsLoadingDepoimentos(true);
+        try {
+            await portfolioService.aprovarDepoimento(idDepoimento);
+            await loadDepoimentos();
+        } catch (error) {
+            console.error("Erro ao aprovar depoimento:", error);
+            setIsLoadingDepoimentos(false);
+        }
+    };
+
     return {
         isLoading,
+        isLoadingDepoimentos,
         data,
+        depoimentos,
         loadData,
+        loadDepoimentos,
         handleUpdate,
         handleUpdateBasico,
         handleUpload,
-        handleDeleteFoto
+        handleDeleteFoto,
+        handleAprovarDepoimento
     };
 }

@@ -17,7 +17,7 @@ export function PerfilLayout() {
     } = useAccountController();
 
     useEffect(() => {
-        const userId = id === "me" ? localStorage.getItem("id") : id;
+        const userId = id === "me" ? (localStorage.getItem("id_loja") || localStorage.getItem("id")) : id;
         if (userId) {
             loadAccount(userId);
             loadPortfolio(userId);

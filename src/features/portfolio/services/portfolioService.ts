@@ -1,5 +1,6 @@
 import { api } from '@/services/api';
 import type { PortfolioData } from '@/types/api';
+import type { Depoimento } from '../types';
 
 /**
  * Serviço responsável pelas operações relacionadas ao Portfólio.
@@ -38,7 +39,7 @@ class PortfolioService {
      * @param payload Objeto contendo os campos parciais a serem atualizados.
      */
     async updatePortfolio(payload: Partial<PortfolioData>): Promise<any> {
-        const idLoja = localStorage.getItem("id") || "";
+        const idLoja = localStorage.getItem("id_loja") || "";
         const cleanedPayload = {
             ...payload,
             id_loja: idLoja,
@@ -115,6 +116,24 @@ class PortfolioService {
      */
     async removeFoto(idFoto: number): Promise<any> {
         const response = await api.post('portfolio/remove', { id_foto: idFoto });
+        return response.data;
+    }
+
+    /**
+     * Busca os depoimentos pendentes de aprovação.
+     * @returns Promessa com a lista de depoimentos.
+     */
+    async getDepoimentosPendentes(): Promise<Depoimento[]> {
+        const response = await api.get('depoimentos/pendentes');
+        return response.data;
+    }
+
+    /**
+     * Aprova um depoimento específico.
+     * @param idDepoimento ID do depoimento a ser aprovado.
+     */
+    async aprovarDepoimento(idDepoimento: number): Promise<any> {
+        const response = await api.put('depoimentos/aprovar', { id_depoimento: idDepoimento });
         return response.data;
     }
 }

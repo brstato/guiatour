@@ -91,7 +91,7 @@ api.interceptors.response.use(
             isRefreshing = true;
 
             const rToken = localStorage.getItem("r_token");
-            const userId = localStorage.getItem("id");
+            const userId = localStorage.getItem("id_loja") || localStorage.getItem("id");
 
             if (!rToken || !userId) {
                 isRefreshing = false;

@@ -14,11 +14,11 @@ if [ $? -eq 0 ]; then
     echo "✅ Build finalizado com sucesso!"
     
     echo "📦 Sincronizando arquivos com o servidor via rsync..."
-    # Garante que o diretório de destino exista e tenha as permissões corretas
-    ssh ${SERVER_USER}@${SERVER_IP} "sudo mkdir -p ${DEST_DIR} && sudo chown -R ${SERVER_USER}:${SERVER_USER} ${DEST_DIR}"
+    # Garante que o diretório de destino exista
+    ssh ${SERVER_USER}@${SERVER_IP} "mkdir -p ${DEST_DIR}"
     
     # Sincroniza a pasta dist com o servidor
-    rsync -avz --delete dist/ ${SERVER_USER}@${SERVER_IP}:${DEST_DIR}
+    rsync -rvz --delete dist/ ${SERVER_USER}@${SERVER_IP}:${DEST_DIR}
     
     if [ $? -eq 0 ]; then
         echo "🎉 Deploy realizado com sucesso em ${DEST_DIR}!"

@@ -20,7 +20,7 @@ export interface MetricasResponse {
 }
 
 export function useMetricas(tatuadorId: string | undefined) {
-    const id = tatuadorId === "me" ? localStorage.getItem("id") : tatuadorId;
+    const id = tatuadorId === "me" ? (localStorage.getItem("id_loja") || localStorage.getItem("id")) : tatuadorId;
 
     return useQuery<MetricasResponse>({
         queryKey: ["metricas", id],

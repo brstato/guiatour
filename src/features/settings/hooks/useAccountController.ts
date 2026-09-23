@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { accountService } from '../services/accountService';
-import type { AccountData, AddressData } from '@/types/api';
+import type { AccountData, AddressData, Categoria } from '@/types/api';
 
 /**
  * Hook customizado que atua como Controller para as configurações de conta.
@@ -10,7 +10,20 @@ import type { AccountData, AddressData } from '@/types/api';
 export function useAccountController() {
     const [isLoading, setIsLoading] = useState(false);
     const [data, setData] = useState<AccountData | null>(null);
+    const [categorias, setCategorias] = useState<Categoria[]>([]);
     const [error, setError] = useState<string | null>(null);
+
+    /**
+     * Carrega as categorias de nichos.
+     */
+    const loadCategorias = useCallback(async () => {
+        try {
+            const result = await accountService.getCategorias();
+            setCategorias(result.itens);
+        } catch (err) {
+            console.error("Erro ao carregar categorias:", err);
+        }
+    }, []);
 
     /**
      * Carrega os dados da conta do usuário.
@@ -22,13 +35,14 @@ export function useAccountController() {
         try {
             const result = await accountService.getAccountData(id);
             setData(result);
+            await loadCategorias();
         } catch (err) {
             console.error("Erro ao carregar dados da conta:", err);
             setError("Erro ao carregar dados da conta.");
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [loadCategorias]);
 
     /**
      * Lida com a atualização genérica de campos da conta.
@@ -42,31 +56,44 @@ export function useAccountController() {
         } catch (err) {
             console.error("Erro ao atualizar conta:", err);
             setError("Erro ao atualizar dados da conta.");
-            const id = localStorage.getItem("id") || "";
+            const id = localStorage.getItem("id_loja") || "";
             await loadData(id);
         }
     };
 
     /**
-     * Atualiza dados básicos do perfil (nome e apelido).
-     * @param updateData Objeto com nome/apelido.
+     * Atualiza dados básicos do perfil (nome, apelido e categoria).
+     * @param updateData Objeto com nome/apelido/categoria.
      */
-    const handleUpdateBasico = async (updateData: { nome?: string; apelido?: string }) => {
+    const handleUpdateBasico = async (updateData: { nome?: string; apelido?: string; id_categoria?: number }) => {
         const mergedData = data ? {
             ...data,
             ...(updateData.nome !== undefined && { nome: updateData.nome }),
-            ...(updateData.apelido !== undefined && { slug: updateData.apelido })
-        } : updateData;
+            ...(updateData.apelido !== undefined && { slug: updateData.apelido }),
+            ...(updateData.id_categoria !== undefined && {
+                categoria_id: updateData.id_categoria,
+                id_categoria: updateData.id_categoria
+            })
+        } : {
+            ...updateData,
+            ...(updateData.id_categoria !== undefined && {
+                categoria_id: updateData.id_categoria,
+                id_categoria: updateData.id_categoria
+            })
+        };
 
         setData(mergedData as AccountData);
         setError(null);
         try {
             await accountService.updateAccountBasico(updateData);
-        } catch (err) {
+            return { success: true };
+        } catch (err: any) {
             console.error("Erro ao atualizar dados básicos:", err);
-            setError("Erro ao atualizar dados básicos da conta.");
-            const id = localStorage.getItem("id") || "";
+            const status = err.response?.status;
+            setError(status === 409 ? "Este apelido já está em uso." : "Erro ao atualizar dados básicos da conta.");
+            const id = localStorage.getItem("id_loja") || "";
             await loadData(id);
+            return { success: false, status };
         }
     };
 
@@ -85,11 +112,15 @@ export function useAccountController() {
         setData(mergedData as AccountData);
         setError(null);
         try {
-            await accountService.updateAccountContato(mergedData as any);
+            await accountService.updateAccountContato({
+                telefone: updateData.telefone ?? data?.telefone,
+                email: updateData.email ?? data?.email,
+                instagram: updateData.instagram ?? data?.insta
+            });
         } catch (err) {
             console.error("Erro ao atualizar contato:", err);
             setError("Erro ao atualizar dados de contato.");
-            const id = localStorage.getItem("id") || "";
+            const id = localStorage.getItem("id_loja") || "";
             await loadData(id);
         }
     };
@@ -107,7 +138,7 @@ export function useAccountController() {
         } catch (err) {
             console.error("Erro ao atualizar endereço:", err);
             setError("Erro ao atualizar endereço.");
-            const id = localStorage.getItem("id") || "";
+            const id = localStorage.getItem("id_loja") || "";
             await loadData(id);
         }
     };
@@ -132,7 +163,7 @@ export function useAccountController() {
         } catch (err) {
             console.error("Erro ao atualizar configurações avançadas:", err);
             setError("Erro ao atualizar configurações avançadas.");
-            const id = localStorage.getItem("id") || "";
+            const id = localStorage.getItem("id_loja") || "";
             await loadData(id);
         }
     };
@@ -172,6 +203,7 @@ export function useAccountController() {
     return {
         isLoading,
         data,
+        categorias,
         error,
         loadData,
         handleUpdate,

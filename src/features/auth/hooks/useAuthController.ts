@@ -29,7 +29,7 @@ export function useAuthController() {
       if (autoLoginAttempted.current) return;
 
       const rToken = localStorage.getItem('r_token');
-      const userId = localStorage.getItem('id');
+      const userId = localStorage.getItem('id_loja') || localStorage.getItem('id');
 
       if (!rToken || !userId) return;
 
@@ -62,6 +62,7 @@ export function useAuthController() {
   const clearPersistentTokens = () => {
     localStorage.removeItem('r_token');
     localStorage.removeItem('id');
+    localStorage.removeItem('id_loja');
     localStorage.removeItem('token');
     localStorage.removeItem('google_refresh_token');
     localStorage.removeItem('login_method');
@@ -86,6 +87,7 @@ export function useAuthController() {
         localStorage.setItem('token', result.token);
         localStorage.setItem('r_token', result.rToken);
         localStorage.setItem('id', result.userId);
+        localStorage.setItem('id_loja', result.idLoja);
 
         navigate('/dashboard');
       } else {
@@ -155,6 +157,7 @@ export function useAuthController() {
           localStorage.setItem('token', result.token);
           localStorage.setItem('r_token', result.rToken);
           localStorage.setItem('id', result.userId);
+          localStorage.setItem('id_loja', result.idLoja);
           localStorage.setItem('login_method', 'google');
           navigate('/dashboard');
         } else {

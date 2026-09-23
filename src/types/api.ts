@@ -9,6 +9,7 @@ export interface LoginResult {
     token: string;
     rToken: string;
     userId: string;
+    idLoja: string;
     errorMessage: string;
 }
 
@@ -52,6 +53,15 @@ export interface AddressData {
     };
 }
 
+export interface Categoria {
+    categoria_id: number;
+    categoria_nome: string;
+}
+
+export interface CategoriasResponse {
+    itens: Categoria[];
+}
+
 export interface AccountData {
     nome: string;
     telefone: string;
@@ -66,18 +76,20 @@ export interface AccountData {
     complemento: string;
     insta: string;
     meta_pixel: string;
-    g_analytics_id: string;
+    g_analytcs: string;
     latitude: number;
     longitude: number;
     google_ads_nome: string;
-    google_ads_id: string;
+    conta_google_ads: string;
     meta_long_token?: string;
     meta_ads_id?: string;
     meta_pixel_id?: string;
-    google_analytics_id?: string;
     status_campanha_meta?: boolean;
     horario: Record<string, any>;
     id?: string;
+    categoria_id?: number;
+    id_categoria?: number;
+    categoria_nome?: string;
 }
 
 export interface PortfolioData {

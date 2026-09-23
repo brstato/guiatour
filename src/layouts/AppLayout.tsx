@@ -16,7 +16,7 @@ export function AppLayout() {
   const { data: account, loadData: loadAccount } = useAccountController();
 
   useEffect(() => {
-    const userId = localStorage.getItem("id");
+    const userId = localStorage.getItem("id_loja") || localStorage.getItem("id");
     if (userId && !account) {
       loadAccount(userId);
     }
