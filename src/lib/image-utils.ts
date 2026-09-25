@@ -143,3 +143,21 @@ export async function compressImage(
         img.onerror = (error) => reject(error);
     });
 }
+
+/**
+ * Retorna a URL completa para uma imagem, tratando URLs base64, URLs externas
+ * e caminhos relativos ao servidor de imagens configurado.
+ * @param url Caminho ou URL da imagem.
+ * @returns URL formatada pronta para uso em elementos <img>.
+ */
+export function getImageUrl(url: string | undefined): string {
+    if (!url) return "";
+    if (url.startsWith('data:') || url.startsWith('http')) return url;
+
+    // Fallback para a URL do frontend caso a variável de ambiente não esteja definida
+    const base = import.meta.env.VITE_IMAGE_BASE_URL || 'https://pages.guiatour.online';
+
+    // Garante que não haja barras duplas e que a URL esteja bem formada
+    const cleanPath = url.startsWith('/') ? url : `/${url}`;
+    return `${base}${cleanPath}`;
+}

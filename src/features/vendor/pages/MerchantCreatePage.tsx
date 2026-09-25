@@ -20,7 +20,7 @@ import { VendorHeader } from "../components/VendorHeader";
 import { useAccountController } from "@/features/settings/hooks/useAccountController";
 import { usePortfolioController } from "@/features/portfolio/hooks/usePortfolioController";
 import { useVendorController } from "@/features/vendor/hooks/useVendorController";
-import { processAndCompressImage } from "@/lib/image-utils";
+import { processAndCompressImage, getImageUrl } from "@/lib/image-utils";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
@@ -399,12 +399,6 @@ export default function MerchantCreatePage() {
     }
   }, [portfolioData, localPortfolio]);
 
-  const getImageUrl = (url: string | undefined) => {
-    if (!url) return "";
-    if (url.startsWith('data:') || url.startsWith('http')) return url;
-    return `https://guiatour.online${url.startsWith('/') ? '' : '/'}${url}`;
-  };
-
   // Previews combinando dados do servidor e locais
   const displayImages = useMemo(() => {
     return {
@@ -426,16 +420,19 @@ export default function MerchantCreatePage() {
       const maxDim = type === 'avatar' ? 800 : 1920;
       const base64String = await processAndCompressImage(file, maxDim);
       
+      // Sanitiza o nome do arquivo para evitar problemas com espaços em URLs
+      const sanitizedName = file.name.replace(/\s+/g, '_');
+      
       // Armazena localmente para o payload final
       if (type === 'gallery') {
         setLocalImages(prev => ({
           ...prev,
-          gallery: [...prev.gallery, { base64: base64String, name: file.name, id: Date.now() }]
+          gallery: [...prev.gallery, { base64: base64String, name: sanitizedName, id: Date.now() }]
         }));
       } else {
         setLocalImages(prev => ({
           ...prev,
-          [type]: { base64: base64String, name: file.name }
+          [type]: { base64: base64String, name: sanitizedName }
         }));
       }
     } catch (error: any) {

@@ -4,7 +4,7 @@ import { useAccountController } from '@/features/settings/hooks/useAccountContro
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { processAndCompressImage } from "@/lib/image-utils";
+import { processAndCompressImage, getImageUrl } from "@/lib/image-utils";
 import {
     ExternalLink,
     Plus,
@@ -400,12 +400,6 @@ export function PortfolioPage() {
         goToStep: tourGoToStep,
     } = usePortfolioTour(userId, loadingPortfolio || loadingAccount);
 
-    const getImageUrl = (url: string | undefined) => {
-        if (!url) return "";
-        if (url.startsWith('data:') || url.startsWith('http')) return url;
-        return `https://guiatour.online${url.startsWith('/') ? '' : '/'}${url}`;
-    };
-
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'bio' | 'gallery' | 'capa') => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -415,7 +409,11 @@ export function PortfolioPage() {
             const maxDim = type === 'avatar' ? 800 : 1920;
             const base64String = await processAndCompressImage(file, maxDim);
             const idSite = portfolio?.id_site || 0;
-            await uploadFile(type, file.name, base64String, idSite);
+            
+            // Sanitiza o nome do arquivo para evitar problemas com espaços e caracteres especiais em URLs
+            const sanitizedName = file.name.replace(/\s+/g, '_');
+            
+            await uploadFile(type, sanitizedName, base64String, idSite);
         } catch (error: any) {
             console.error('Erro ao processar/enviar imagem:', error);
             const errorMessage = error?.response?.data?.error || error?.response?.data?.message || error?.message || 'Erro desconhecido';
