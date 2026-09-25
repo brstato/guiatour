@@ -4,6 +4,9 @@ import { PerfilLayout } from "../layouts/PerfilLayout";
 import { PortfolioPage } from "../features/portfolio/pages/PortfolioPage";
 import { MetricasPage } from "../features/portfolio/pages/MetricasPage";
 import { LoginPage } from "../features/auth/pages/LoginPage";
+import { VendorRoute } from "../features/vendor/components/VendorRoute";
+import VendorDashboardPage from "../features/vendor/pages/VendorDashboardPage";
+import MerchantCreatePage from "../features/vendor/pages/MerchantCreatePage";
 
 const router = createBrowserRouter([
   {
@@ -11,10 +14,24 @@ const router = createBrowserRouter([
     element: <LoginPage />,
   },
   {
+    path: "/vendedor",
+    element: <VendorRoute />,
+    children: [
+      {
+        index: true,
+        element: <VendorDashboardPage />,
+      },
+      {
+        path: "comerciantes/novo",
+        element: <MerchantCreatePage />,
+      },
+    ],
+  },
+  {
     element: <AppLayout />,
     children: [
       {
-        path: "/tatuador/:id",
+        path: "/loja/:id",
         element: <PerfilLayout />,
         children: [
           {
@@ -33,7 +50,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/portfolio",
-        element: <Navigate to="/tatuador/me/editar" replace />,
+        element: <Navigate to="/loja/me/editar" replace />,
       },
       {
         path: "/dashboard",

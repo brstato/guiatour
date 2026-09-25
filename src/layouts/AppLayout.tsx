@@ -18,7 +18,7 @@ export function AppLayout() {
   useEffect(() => {
     const userId = localStorage.getItem("id_loja") || localStorage.getItem("id");
     if (userId && !account) {
-      loadAccount(userId);
+      loadAccount();
     }
   }, [loadAccount, account]);
 

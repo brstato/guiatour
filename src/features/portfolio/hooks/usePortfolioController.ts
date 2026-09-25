@@ -19,10 +19,10 @@ export function usePortfolioController() {
     /**
      * Carrega os dados do portfólio a partir da API.
      */
-    const loadData = useCallback(async () => {
+    const loadData = useCallback(async (id?: string) => {
         setIsLoading(true);
         try {
-            const result = await portfolioService.getPortfolioData();
+            const result = await portfolioService.getPortfolioData(id);
             setData(result);
         } catch (error) {
             // Se for 404, define um estado inicial vazio para evitar erros de UI e logs excessivos

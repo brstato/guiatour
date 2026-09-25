@@ -10,6 +10,7 @@ export interface LoginResult {
     rToken: string;
     userId: string;
     idLoja: string;
+    role?: 'vendedor' | 'comerciante';
     errorMessage: string;
 }
 
@@ -18,6 +19,7 @@ export interface RefreshResult {
     statusCode: number;
     token: string;
     rToken: string;
+    role?: 'vendedor' | 'comerciante';
 }
 
 export interface RecoveryResult {

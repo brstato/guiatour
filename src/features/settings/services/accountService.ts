@@ -6,11 +6,13 @@ import type { AccountData, AddressData } from '@/types/api';
  * Segue o padrão Singleton para centralizar as chamadas de API de perfil.
  */
 class AccountService {
-    /**
+     /**
      * Busca os dados completos da conta do usuário.
+     * @param id Opcional: ID da loja para vendedores gerenciarem.
      */
-    async getAccountData(): Promise<AccountData> {
-        const response = await api.get('account/get_data');
+    async getAccountData(id?: string): Promise<AccountData> {
+        const url = id && id !== 'me' ? `account/get_data?id_loja=${id}` : 'account/get_data';
+        const response = await api.get(url);
         return response.data;
     }
 

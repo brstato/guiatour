@@ -21,12 +21,29 @@ export function useAuthController() {
   const clearMessage = () => setMessage(null);
 
   /**
+   * Limpa todos os tokens e informações de sessão do localStorage.
+   */
+  const clearPersistentTokens = () => {
+    localStorage.removeItem('r_token');
+    localStorage.removeItem('id');
+    localStorage.removeItem('id_loja');
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('google_refresh_token');
+    localStorage.removeItem('login_method');
+  };
+
+  /**
    * Tenta realizar o login automático ao montar o componente.
    * Verifica a existência de um refresh token e tenta renovar o acesso.
    */
   useEffect(() => {
     const tryAutoLogin = async () => {
       if (autoLoginAttempted.current) return;
+      
+      // Só executa o auto-login se estiver na página de login ou root
+      const isAtLogin = window.location.pathname === '/' || window.location.pathname === '';
+      if (!isAtLogin) return;
 
       const rToken = localStorage.getItem('r_token');
       const userId = localStorage.getItem('id_loja') || localStorage.getItem('id');
@@ -40,7 +57,17 @@ export function useAuthController() {
         if (result.success) {
           localStorage.setItem('r_token', result.rToken);
           localStorage.setItem('token', result.token);
-          navigate('/portfolio');
+          
+          const role = result.role?.trim().toLowerCase();
+          if (role) localStorage.setItem('role', role);
+          
+          console.log("Auto-login detected role:", role);
+          
+          if (role === 'vendedor') {
+            navigate('/vendedor');
+          } else {
+            navigate('/portfolio');
+          }
         } else {
           if (result.statusCode === 401) {
             clearPersistentTokens();
@@ -55,18 +82,6 @@ export function useAuthController() {
 
     tryAutoLogin();
   }, [navigate]);
-
-  /**
-   * Limpa todos os tokens e informações de sessão do localStorage.
-   */
-  const clearPersistentTokens = () => {
-    localStorage.removeItem('r_token');
-    localStorage.removeItem('id');
-    localStorage.removeItem('id_loja');
-    localStorage.removeItem('token');
-    localStorage.removeItem('google_refresh_token');
-    localStorage.removeItem('login_method');
-  };
 
   /**
    * Lida com o processo de login por e-mail e senha.
@@ -88,8 +103,17 @@ export function useAuthController() {
         localStorage.setItem('r_token', result.rToken);
         localStorage.setItem('id', result.userId);
         localStorage.setItem('id_loja', result.idLoja);
+        
+        const role = result.role?.trim().toLowerCase();
+        if (role) localStorage.setItem('role', role);
+        
+        console.log("Login detected role:", role);
 
-        navigate('/dashboard');
+        if (role === 'vendedor') {
+          navigate('/vendedor');
+        } else {
+          navigate('/dashboard');
+        }
       } else {
         const errorTitles: Record<number, string> = {
           401: 'Acesso Negado',
@@ -159,7 +183,17 @@ export function useAuthController() {
           localStorage.setItem('id', result.userId);
           localStorage.setItem('id_loja', result.idLoja);
           localStorage.setItem('login_method', 'google');
-          navigate('/dashboard');
+          
+          const role = result.role?.trim().toLowerCase();
+          if (role) localStorage.setItem('role', role);
+          
+          console.log("Google login detected role:", role);
+          
+          if (role === 'vendedor') {
+            navigate('/vendedor');
+          } else {
+            navigate('/dashboard');
+          }
         } else {
           setError({ title: 'Erro de Autenticação', message: `Falha ao autenticar com Google no servidor.` });
         }

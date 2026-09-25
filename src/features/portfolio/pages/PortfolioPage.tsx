@@ -150,6 +150,7 @@ function EditableField({
     onSave,
     multiline = false,
     numericOnly = false,
+    isSlug = false,
     maxLength,
     theme = "light",
     error
@@ -159,6 +160,7 @@ function EditableField({
     onSave: (val: string) => void;
     multiline?: boolean;
     numericOnly?: boolean;
+    isSlug?: boolean;
     maxLength?: number;
     theme?: "light" | "dark";
     error?: string | null;
@@ -224,6 +226,7 @@ function EditableField({
                     onChange={(e) => {
                         let val = e.target.value;
                         if (numericOnly) val = val.replace(/\D/g, '');
+                        if (isSlug) val = val.toLowerCase().replace(/[^a-z0-9]/g, '');
                         setLocalValue(val);
                     }}
                     onBlur={handleBlur}
@@ -565,6 +568,7 @@ export function PortfolioPage() {
                             label="Apelido"
                             value={account?.slug}
                             maxLength={100}
+                            isSlug
                             error={slugError}
                             onSave={async (val) => {
                                 setSlugError(null);

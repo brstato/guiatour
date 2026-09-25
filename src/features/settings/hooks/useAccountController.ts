@@ -28,11 +28,11 @@ export function useAccountController() {
     /**
      * Carrega os dados da conta do usuário.
      */
-    const loadData = useCallback(async () => {
+    const loadData = useCallback(async (id?: string) => {
         setIsLoading(true);
         setError(null);
         try {
-            const result = await accountService.getAccountData();
+            const result = await accountService.getAccountData(id);
             setData(result);
             await loadCategorias();
         } catch (err) {

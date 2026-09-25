@@ -105,6 +105,7 @@ class AuthService {
           statusCode: 200,
           token: response.data.token,
           rToken: response.data.r_token,
+          role: response.data.tipo || response.data.message?.tipo,
         };
       }
       return { success: false, statusCode: response.status, token: '', rToken: '' };
@@ -159,6 +160,7 @@ class AuthService {
         rToken: response.data.r_token,
         userId: String(response.data.message?.id || ''),
         idLoja: String(response.data.id_loja || ''),
+        role: response.data.tipo || response.data.message?.tipo,
         errorMessage: '',
       };
     }
