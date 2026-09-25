@@ -1,10 +1,8 @@
 import { useEffect, useState, useMemo, useRef, useLayoutEffect } from "react";
 import { 
   ChevronLeft, 
-  Store, 
   Check, 
   Circle, 
-  HelpCircle, 
   Phone, 
   MapPin, 
   Settings, 
@@ -14,7 +12,6 @@ import {
   Plus, 
   FileText, 
   Camera, 
-  Sparkles,
   ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -365,7 +362,7 @@ export default function MerchantCreatePage() {
     loadData: loadPortfolio,
   } = usePortfolioController();
 
-  const [slugError, setSlugError] = useState<string | null>(null);
+  const [slugError] = useState<string | null>(null);
   const [photoToDelete, setPhotoToDelete] = useState<number | null>(null);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [createdSlug, setCreatedSlug] = useState("");

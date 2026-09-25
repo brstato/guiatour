@@ -13,18 +13,18 @@ interface MerchantFormProps {
 }
 
 export function MerchantForm({ onSubmit, isLoading, categorias = [] }: MerchantFormProps) {
-  const [formData, setFormData] = useState<CreateMerchantDTO>({
+  const [formData, setFormData] = useState<Partial<CreateMerchantDTO>>({
     nome: "",
     email: "",
     telefone: "",
-    idCategoria: undefined,
+    id_categoria: undefined,
     cep: "",
     endereco: "",
     numero: "",
     complemento: "",
     bairro: "",
     cidade: "",
-    uf: "",
+    estado: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -33,7 +33,7 @@ export function MerchantForm({ onSubmit, isLoading, categorias = [] }: MerchantF
     const { name, value } = e.target;
     setFormData((prev) => ({ 
       ...prev, 
-      [name]: name === 'idCategoria' ? (value ? parseInt(value) : undefined) : value 
+      [name]: name === 'id_categoria' ? (value ? parseInt(value) : undefined) : value 
     }));
     
     // Limpa erro ao digitar
@@ -49,7 +49,7 @@ export function MerchantForm({ onSubmit, isLoading, categorias = [] }: MerchantF
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.nome) newErrors.nome = "Nome é obrigatório";
-    if (!formData.idCategoria) newErrors.idCategoria = "Categoria é obrigatória";
+    if (!formData.id_categoria) newErrors.id_categoria = "Categoria é obrigatória";
     if (!formData.email) newErrors.email = "E-mail é obrigatório";
     if (!formData.telefone) newErrors.telefone = "Telefone é obrigatório";
     if (!formData.cep) newErrors.cep = "CEP é obrigatório";
@@ -57,7 +57,7 @@ export function MerchantForm({ onSubmit, isLoading, categorias = [] }: MerchantF
     if (!formData.numero) newErrors.numero = "Número é obrigatório";
     if (!formData.bairro) newErrors.bairro = "Bairro é obrigatório";
     if (!formData.cidade) newErrors.cidade = "Cidade é obrigatório";
-    if (!formData.uf) newErrors.uf = "UF é obrigatório";
+    if (!formData.estado) newErrors.estado = "Estado é obrigatório";
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -66,7 +66,7 @@ export function MerchantForm({ onSubmit, isLoading, categorias = [] }: MerchantF
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
-      await onSubmit(formData);
+      await onSubmit(formData as CreateMerchantDTO);
     }
   };
 
@@ -94,13 +94,13 @@ export function MerchantForm({ onSubmit, isLoading, categorias = [] }: MerchantF
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="idCategoria">Categoria *</Label>
+            <Label htmlFor="id_categoria">Categoria *</Label>
             <select
-              id="idCategoria"
-              name="idCategoria"
-              value={formData.idCategoria || ""}
+              id="id_categoria"
+              name="id_categoria"
+              value={formData.id_categoria || ""}
               onChange={handleChange}
-              className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${errors.idCategoria ? "border-red-500" : ""}`}
+              className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${errors.id_categoria ? "border-red-500" : ""}`}
             >
               <option value="">Selecione uma categoria</option>
               {categorias.map((cat) => (
@@ -109,7 +109,7 @@ export function MerchantForm({ onSubmit, isLoading, categorias = [] }: MerchantF
                 </option>
               ))}
             </select>
-            {errors.idCategoria && <p className="text-xs text-red-500">{errors.idCategoria}</p>}
+            {errors.id_categoria && <p className="text-xs text-red-500">{errors.id_categoria}</p>}
           </div>
 
           <div className="space-y-2">
@@ -226,17 +226,17 @@ export function MerchantForm({ onSubmit, isLoading, categorias = [] }: MerchantF
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="uf">UF *</Label>
+            <Label htmlFor="estado">UF *</Label>
             <Input 
-              id="uf" 
-              name="uf"
+              id="estado" 
+              name="estado"
               placeholder="SP"
               maxLength={2}
-              value={formData.uf}
+              value={formData.estado}
               onChange={handleChange}
-              className={errors.uf ? "border-red-500" : ""}
+              className={errors.estado ? "border-red-500" : ""}
             />
-            {errors.uf && <p className="text-xs text-red-500">{errors.uf}</p>}
+            {errors.estado && <p className="text-xs text-red-500">{errors.estado}</p>}
           </div>
         </div>
       </div>
