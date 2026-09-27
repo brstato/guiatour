@@ -375,6 +375,7 @@ export default function MerchantCreatePage() {
     handleUpdateContato: updateAccountContato,
     handleUpdateEndereco: updateAccountEndereco,
     handleUpdateConfiguracoesAvancadas: updateAccountConfiguracoesAvancadas,
+    validateSlug
   } = useAccountController();
 
   const {
@@ -762,7 +763,15 @@ export default function MerchantCreatePage() {
                   maxLength={100}
                   isSlug
                   error={validationErrors.slug}
-                  onSave={(val) => {
+                  onSave={async (val) => {
+                    if (val.trim() && val !== localAccount?.slug) {
+                      const isValid = await validateSlug(val, merchantUuid || '');
+                      if (!isValid) {
+                        alert("Este apelido já está em uso. Por favor, escolha outro.");
+                        return;
+                      }
+                    }
+                    
                     if (merchantUuid) {
                       updateAccountBasico({ 
                         nome: localAccount?.nome, 
