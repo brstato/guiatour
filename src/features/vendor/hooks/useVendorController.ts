@@ -21,12 +21,21 @@ export function useVendorController() {
     queryFn: () => vendorService.getMerchants(page, pageSize),
   });
 
+  // Query para buscar lista simplificada de comércios
+  const {
+    data: vendorMerchants,
+    isLoading: isLoadingVendorMerchants,
+    refetch: refetchVendorMerchants,
+  } = useQuery({
+    queryKey: ['vendor', 'comercios'],
+    queryFn: () => vendorService.listMerchants(),
+  });
+
   // Mutation para criar comerciante
   const createMerchantMutation = useMutation({
     mutationFn: (data: CreateMerchantDTO) => vendorService.createMerchant(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor', 'merchants'] });
-      navigate('/vendedor');
     },
   });
 
@@ -38,7 +47,7 @@ export function useVendorController() {
 
   const handleCreateMerchant = async (data: CreateMerchantDTO) => {
     try {
-      await createMerchantMutation.mutateAsync(data);
+      return await createMerchantMutation.mutateAsync(data);
     } catch (err) {
       console.error('Erro ao criar comerciante:', err);
       throw err;
@@ -51,10 +60,13 @@ export function useVendorController() {
     page,
     setPage,
     isLoading,
+    isLoadingVendorMerchants,
+    vendorMerchants: vendorMerchants || [],
     isCreating: createMerchantMutation.isPending,
     error,
     createMerchant: handleCreateMerchant,
     selectMerchant,
     reload: refetch,
+    reloadVendorMerchants: refetchVendorMerchants,
   };
 }

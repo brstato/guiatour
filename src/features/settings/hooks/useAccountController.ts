@@ -61,9 +61,9 @@ export function useAccountController() {
 
     /**
      * Atualiza dados básicos do perfil (nome, apelido e categoria).
-     * @param updateData Objeto com nome/apelido/categoria.
+     * @param updateData Objeto com nome/apelido/categoria e id_loja opcional.
      */
-    const handleUpdateBasico = async (updateData: { nome?: string; apelido?: string; id_categoria?: number }) => {
+    const handleUpdateBasico = async (updateData: { nome?: string; apelido?: string; id_categoria?: number; id_loja?: string }) => {
         const mergedData = data ? {
             ...data,
             ...(updateData.nome !== undefined && { nome: updateData.nome }),
@@ -89,16 +89,16 @@ export function useAccountController() {
             console.error("Erro ao atualizar dados básicos:", err);
             const status = err.response?.status;
             setError(status === 409 ? "Este apelido já está em uso." : "Erro ao atualizar dados básicos da conta.");
-            await loadData();
+            await loadData(updateData.id_loja);
             return { success: false, status };
         }
     };
 
     /**
      * Atualiza dados de contato (telefone, e-mail, instagram).
-     * @param updateData Campos de contato.
+     * @param updateData Campos de contato e id_loja opcional.
      */
-    const handleUpdateContato = async (updateData: { telefone?: string; email?: string; instagram?: string }) => {
+    const handleUpdateContato = async (updateData: { telefone?: string; email?: string; instagram?: string; id_loja?: string }) => {
         const mergedData = data ? {
             ...data,
             ...(updateData.telefone !== undefined && { telefone: updateData.telefone }),
@@ -112,37 +112,41 @@ export function useAccountController() {
             await accountService.updateAccountContato({
                 telefone: updateData.telefone ?? data?.telefone,
                 email: updateData.email ?? data?.email,
-                instagram: updateData.instagram ?? data?.insta
+                instagram: updateData.instagram ?? data?.insta,
+                id_loja: updateData.id_loja
             });
         } catch (err) {
             console.error("Erro ao atualizar contato:", err);
             setError("Erro ao atualizar dados de contato.");
-            await loadData();
+            await loadData(updateData.id_loja);
         }
     };
 
     /**
      * Atualiza os dados de endereço do usuário.
-     * @param updateData Campos parciais de endereço.
+     * @param updateData Campos parciais de endereço e id_loja opcional.
      */
-    const handleUpdateEndereco = async (updateData: Partial<AccountData>) => {
+    const handleUpdateEndereco = async (updateData: Partial<AccountData> & { id_loja?: string }) => {
         const mergedData = data ? { ...data, ...updateData } : updateData;
         setData(mergedData as AccountData);
         setError(null);
         try {
-            await accountService.updateEndereco(mergedData);
+            await accountService.updateEndereco({
+                ...mergedData,
+                id_loja: updateData.id_loja
+            });
         } catch (err) {
             console.error("Erro ao atualizar endereço:", err);
             setError("Erro ao atualizar endereço.");
-            await loadData();
+            await loadData(updateData.id_loja);
         }
     };
 
     /**
      * Atualiza as configurações avançadas de marketing.
-     * @param updateData IDs de Analytics, Pixel e Ads.
+     * @param updateData IDs de Analytics, Pixel e Ads e id_loja opcional.
      */
-    const handleUpdateConfiguracoesAvancadas = async (updateData: { g_analytcs?: string; meta_pixel_id?: string; conta_google_ads?: string; horario?: any }) => {
+    const handleUpdateConfiguracoesAvancadas = async (updateData: { g_analytcs?: string; meta_pixel_id?: string; conta_google_ads?: string; horario?: any; id_loja?: string }) => {
         const mergedData = data ? {
             ...data,
             ...(updateData.g_analytcs !== undefined && { g_analytcs: updateData.g_analytcs }),
@@ -158,7 +162,7 @@ export function useAccountController() {
         } catch (err) {
             console.error("Erro ao atualizar configurações avançadas:", err);
             setError("Erro ao atualizar configurações avançadas.");
-            await loadData();
+            await loadData(updateData.id_loja);
         }
     };
 

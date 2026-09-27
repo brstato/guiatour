@@ -102,8 +102,19 @@ function ScheduleItemEditor({
   onUpdate: (data: { aberto: boolean, inicio: string, fim: string }) => void
 }) {
   const aberto = data?.aberto ?? false;
-  const inicio = data?.inicio ?? "09:00";
-  const fim = data?.fim ?? "18:00";
+  const [localInicio, setLocalInicio] = useState(data?.inicio ?? "09:00");
+  const [localFim, setLocalFim] = useState(data?.fim ?? "18:00");
+
+  useEffect(() => {
+    setLocalInicio(data?.inicio ?? "09:00");
+    setLocalFim(data?.fim ?? "18:00");
+  }, [data?.inicio, data?.fim]);
+
+  const handleBlur = () => {
+    if (localInicio !== (data?.inicio ?? "09:00") || localFim !== (data?.fim ?? "18:00")) {
+      onUpdate({ aberto, inicio: localInicio, fim: localFim });
+    }
+  };
 
   return (
       <div className={cn(
@@ -113,7 +124,7 @@ function ScheduleItemEditor({
           <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                   <div
-                      onClick={() => onUpdate({ aberto: !aberto, inicio, fim })}
+                      onClick={() => onUpdate({ aberto: !aberto, inicio: localInicio, fim: localFim })}
                       className={cn(
                           "w-12 h-6 rounded-full relative transition-all duration-300 cursor-pointer p-1",
                           aberto ? "bg-[#2563eb]" : "bg-slate-300"
@@ -144,8 +155,9 @@ function ScheduleItemEditor({
                       <div className="flex flex-col w-full">
                           <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Início</span>
                           <select
-                              value={inicio}
-                              onChange={(e) => onUpdate({ aberto, inicio: e.target.value, fim })}
+                              value={localInicio}
+                              onChange={(e) => setLocalInicio(e.target.value)}
+                              onBlur={handleBlur}
                               className="bg-transparent text-sm font-bold text-slate-800 outline-none appearance-none cursor-pointer w-full"
                           >
                               {HOUR_OPTIONS.map(h => <option key={h} value={h} className="bg-white text-slate-800">{h}</option>)}
@@ -159,8 +171,9 @@ function ScheduleItemEditor({
                       <div className="flex flex-col w-full">
                           <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Fim</span>
                           <select
-                              value={fim}
-                              onChange={(e) => onUpdate({ aberto, inicio, fim: e.target.value })}
+                              value={localFim}
+                              onChange={(e) => setLocalFim(e.target.value)}
+                              onBlur={handleBlur}
                               className="bg-transparent text-sm font-bold text-slate-800 outline-none appearance-none cursor-pointer w-full"
                           >
                               {HOUR_OPTIONS.map(h => <option key={h} value={h} className="bg-white text-slate-800">{h}</option>)}
@@ -215,9 +228,10 @@ function EditableField({
     }
   }, [localValue, multiline]);
 
-  const handleChange = (val: string) => {
-    setLocalValue(val);
-    onSave(val);
+  const handleBlur = () => {
+    if (localValue !== (value || '')) {
+      onSave(localValue);
+    }
   };
 
   const isDark = theme === "dark";
@@ -245,7 +259,8 @@ function EditableField({
           ref={textareaRef}
           value={localValue}
           maxLength={maxLength}
-          onChange={(e) => handleChange(e.target.value)}
+          onChange={(e) => setLocalValue(e.target.value)}
+          onBlur={handleBlur}
           className={cn(
             "w-full bg-transparent border-none p-0 text-sm font-medium focus:outline-none focus:border-b-2 focus:border-[#2563eb] transition-none resize-none overflow-hidden",
             isDark ? "text-white placeholder:text-white/40" : "text-slate-900 placeholder:text-slate-400",
@@ -261,8 +276,9 @@ function EditableField({
             let val = e.target.value;
             if (numericOnly) val = val.replace(/\D/g, '');
             if (isSlug) val = val.toLowerCase().replace(/[^a-z0-9]/g, '');
-            handleChange(val);
+            setLocalValue(val);
           }}
+          onBlur={handleBlur}
           className={cn(
             "bg-transparent border-none p-0 h-auto text-sm font-semibold focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-[#2563eb] rounded-none transition-none shadow-none",
             isDark ? "text-white placeholder:text-white/40" : "text-slate-900 placeholder:text-slate-400",
@@ -300,10 +316,10 @@ function EditableSelect({
     setLocalValue(value || '');
   }, [value]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    setLocalValue(val);
-    onSave(val);
+  const handleBlur = () => {
+    if (localValue !== (value || '')) {
+      onSave(localValue.toString());
+    }
   };
 
   const isDark = theme === "dark";
@@ -321,7 +337,8 @@ function EditableSelect({
       <div className="relative">
         <select
           value={localValue}
-          onChange={handleChange}
+          onChange={(e) => setLocalValue(e.target.value)}
+          onBlur={handleBlur}
           className={cn(
             "w-full bg-transparent border-none p-0 h-auto text-sm font-semibold focus:outline-none focus:border-b-2 focus:border-[#2563eb] rounded-none transition-none shadow-none appearance-none cursor-pointer",
             isDark ? "text-white" : "text-slate-900",
@@ -353,19 +370,27 @@ export default function MerchantCreatePage() {
     categorias, 
     isLoading: isLoadingAccount,
     loadData: loadAccount, 
-    fetchAddress
+    fetchAddress,
+    handleUpdateBasico: updateAccountBasico,
+    handleUpdateContato: updateAccountContato,
+    handleUpdateEndereco: updateAccountEndereco,
+    handleUpdateConfiguracoesAvancadas: updateAccountConfiguracoesAvancadas,
   } = useAccountController();
 
   const {
     data: portfolioData,
     isLoading: isLoadingPortfolio,
     loadData: loadPortfolio,
+    handleUpdateBasico: updatePortfolioBasico,
+    handleUpload: uploadFile,
+    handleDeleteFoto,
   } = usePortfolioController();
 
-  const [slugError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [photoToDelete, setPhotoToDelete] = useState<number | null>(null);
-  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [isCreated, setIsCreated] = useState(false);
   const [createdSlug, setCreatedSlug] = useState("");
+  const [merchantUuid, setMerchantUuid] = useState<string | null>(() => localStorage.getItem("id_loja"));
 
   // Estado local para evitar updates incrementais no backend
   const [localAccount, setLocalAccount] = useState<AccountData | null>(null);
@@ -382,11 +407,11 @@ export default function MerchantCreatePage() {
   });
 
   useEffect(() => {
-    loadAccount();
-    loadPortfolio();
-  }, [loadAccount, loadPortfolio]);
+    loadAccount(merchantUuid || undefined);
+    loadPortfolio(merchantUuid || undefined);
+  }, [loadAccount, loadPortfolio, merchantUuid]);
 
-  // Sincroniza dados iniciais apenas uma vez
+  // Sincroniza dados iniciais apenas uma vez para não perder alterações locais após o cadastro
   useEffect(() => {
     if (accountData && !localAccount) {
       setLocalAccount(accountData);
@@ -423,17 +448,41 @@ export default function MerchantCreatePage() {
       // Sanitiza o nome do arquivo para evitar problemas com espaços em URLs
       const sanitizedName = file.name.replace(/\s+/g, '_');
       
-      // Armazena localmente para o payload final
-      if (type === 'gallery') {
-        setLocalImages(prev => ({
-          ...prev,
-          gallery: [...prev.gallery, { base64: base64String, name: sanitizedName, id: Date.now() }]
-        }));
+      if (merchantUuid) {
+        const idSite = localPortfolio?.id_site || 0;
+        await uploadFile(type, sanitizedName, base64String, idSite);
       } else {
-        setLocalImages(prev => ({
-          ...prev,
-          [type]: { base64: base64String, name: sanitizedName }
-        }));
+        // Armazena localmente para o payload final apenas se não foi criado ainda
+        if (type === 'gallery') {
+          setLocalImages(prev => {
+            const newGallery = [...prev.gallery, { base64: base64String, name: sanitizedName, id: Date.now() }];
+            if (newGallery.length >= 4) {
+              setValidationErrors(v => {
+                const n = { ...v };
+                delete n.trabalhos;
+                return n;
+              });
+            }
+            return {
+              ...prev,
+              gallery: newGallery
+            };
+          });
+        } else {
+          setLocalImages(prev => {
+            setValidationErrors(v => {
+              const n = { ...v };
+              if (type === 'avatar') delete n.avatar;
+              if (type === 'capa') delete n.capa;
+              if (type === 'bio') delete n.foto_bio;
+              return n;
+            });
+            return {
+              ...prev,
+              [type]: { base64: base64String, name: sanitizedName }
+            };
+          });
+        }
       }
     } catch (error: any) {
       console.error('Erro ao processar imagem:', error);
@@ -445,6 +494,47 @@ export default function MerchantCreatePage() {
 
   const handleConfirmarCadastro = async () => {
     if (!localAccount || !localPortfolio) return;
+
+    const newErrors: Record<string, string> = {};
+    
+    // Identidade
+    if (!localAccount.nome?.trim()) newErrors.nome = "Nome é obrigatório";
+    if (!localAccount.slug?.trim()) newErrors.slug = "Apelido é obrigatório";
+    if (!(localAccount.id_categoria || localAccount.categoria_id)) newErrors.id_categoria = "Categoria é obrigatória";
+    if (!displayImages.avatar) newErrors.avatar = "Avatar é obrigatório";
+    if (!displayImages.capa) newErrors.capa = "Capa é obrigatória";
+
+    // Apresentação
+    if (!displayImages.bio) newErrors.foto_bio = "Foto da bio é obrigatória";
+    if (!localPortfolio.titulo?.trim()) newErrors.titulo = "Título é obrigatório";
+    if (!localPortfolio.subtitulo?.trim()) newErrors.subtitulo = "Subtítulo é obrigatório";
+    if (!localPortfolio.bio?.trim()) newErrors.bio = "Bio é obrigatória";
+
+    // Contato
+    if (!localAccount.telefone?.trim()) newErrors.telefone = "Telefone é obrigatório";
+    if (!localAccount.email?.trim()) newErrors.email = "Email é obrigatório";
+    if (!localAccount.insta?.trim()) newErrors.insta = "Instagram é obrigatório";
+
+    // Localização
+    if (!localAccount.cep?.trim()) newErrors.cep = "CEP é obrigatório";
+    if (!localAccount.endereco?.trim()) newErrors.endereco = "Endereço é obrigatório";
+    if (!localAccount.numero?.trim()) newErrors.numero = "Número é obrigatório";
+    if (!localAccount.complemento?.trim()) newErrors.complemento = "Complemento é obrigatório";
+    if (!localAccount.bairro?.trim()) newErrors.bairro = "Bairro é obrigatório";
+    if (!localAccount.cidade?.trim()) newErrors.cidade = "Cidade é obrigatória";
+    if (!localAccount.estado?.trim()) newErrors.estado = "Estado é obrigatório";
+
+    // Trabalhos
+    if (displayImages.gallery.length < 4) {
+      newErrors.trabalhos = "Adicione pelo menos 4 fotos de trabalho";
+    }
+
+    setValidationErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      alert("Por favor, preencha todos os campos obrigatórios antes de confirmar o cadastro.");
+      return;
+    }
 
     const cleanBase64 = (base64?: string) => {
       if (!base64) return '';
@@ -485,9 +575,16 @@ export default function MerchantCreatePage() {
     };
 
     try {
-      await createMerchant(payload);
-      setCreatedSlug(localAccount.slug);
-      setShowSuccessDialog(true);
+      const response = await createMerchant(payload);
+      if (response && (response.status === 201 || response.status === 200)) {
+        const uuid = response.data?.uuid || response.data?.id;
+        if (uuid) {
+          setMerchantUuid(uuid);
+          localStorage.setItem("id_loja", uuid);
+        }
+        setCreatedSlug(localAccount.slug);
+        setIsCreated(true);
+      }
     } catch (error: any) {
       console.error("Erro ao criar comerciante:", error);
       const msg = error?.response?.data?.error || error?.message || "Erro desconhecido";
@@ -496,9 +593,9 @@ export default function MerchantCreatePage() {
   };
 
   const statusApresentacao = useMemo((): SectionStatus => {
-    const isComplete = !!(localPortfolio?.titulo && localPortfolio?.subtitulo && localPortfolio?.bio);
+    const isComplete = !!(localPortfolio?.titulo && localPortfolio?.subtitulo && localPortfolio?.bio && displayImages.bio);
     return isComplete ? "complete" : "pending";
-  }, [localPortfolio]);
+  }, [localPortfolio, displayImages.bio]);
 
   const statusContato = useMemo((): SectionStatus => {
     const isComplete = !!(localAccount?.telefone && localAccount?.email && localAccount?.insta);
@@ -506,7 +603,15 @@ export default function MerchantCreatePage() {
   }, [localAccount]);
 
   const statusLocalizacao = useMemo((): SectionStatus => {
-    const isComplete = !!(localAccount?.cep && localAccount?.endereco && localAccount?.numero && localAccount?.bairro && localAccount?.cidade && localAccount?.estado);
+    const isComplete = !!(
+      localAccount?.cep && 
+      localAccount?.endereco && 
+      localAccount?.numero && 
+      localAccount?.complemento &&
+      localAccount?.bairro && 
+      localAccount?.cidade && 
+      localAccount?.estado
+    );
     return isComplete ? "complete" : "pending";
   }, [localAccount]);
 
@@ -516,9 +621,15 @@ export default function MerchantCreatePage() {
   }, [displayImages.gallery]);
 
   const statusIdentidade = useMemo((): SectionStatus => {
-    const isComplete = !!(displayImages.avatar && displayImages.capa);
+    const isComplete = !!(
+      displayImages.avatar && 
+      displayImages.capa && 
+      localAccount?.nome && 
+      localAccount?.slug && 
+      (localAccount?.id_categoria ?? localAccount?.categoria_id)
+    );
     return isComplete ? "complete" : "pending";
-  }, [displayImages.avatar, displayImages.capa]);
+  }, [displayImages.avatar, displayImages.capa, localAccount]);
 
   const progressPercent = useMemo(() => {
     let completed = 0;
@@ -573,7 +684,10 @@ export default function MerchantCreatePage() {
               </div>
 
               {/* Botão de upload da capa */}
-              <label className="absolute bottom-6 right-6 flex items-center justify-center w-10 h-10 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-full cursor-pointer shadow-lg z-20 hover:scale-110 transition-all active:scale-95">
+              <label className={cn(
+                "absolute bottom-6 right-6 flex items-center justify-center w-10 h-10 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-full cursor-pointer shadow-lg z-20 hover:scale-110 transition-all active:scale-95",
+                validationErrors.capa && "ring-4 ring-red-500 ring-offset-2 animate-bounce"
+              )}>
                 <Camera className="h-5 w-5 text-white" />
                 <input
                   type="file"
@@ -584,7 +698,10 @@ export default function MerchantCreatePage() {
               </label>
 
               <div className="relative z-10 shrink-0">
-                <div className="absolute inset-[5px] rounded-full overflow-hidden bg-slate-100 border-2 border-white shadow-sm">
+                <div className={cn(
+                  "absolute inset-[5px] rounded-full overflow-hidden bg-slate-100 border-2 border-white shadow-sm",
+                  validationErrors.avatar && "ring-4 ring-red-500 ring-offset-2"
+                )}>
                   {displayImages.avatar ? (
                     <img
                       src={displayImages.avatar}
@@ -601,7 +718,10 @@ export default function MerchantCreatePage() {
                   <ProgressRing progress={progressPercent} size={130} strokeWidth={3} />
                 </div>
                 <div className="absolute bottom-1 right-1 bg-white p-1 rounded-full z-10 shadow-sm">
-                  <label className="flex items-center justify-center w-9 h-9 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-full cursor-pointer shadow-lg hover:scale-110 transition-all active:scale-95">
+                  <label className={cn(
+                    "flex items-center justify-center w-9 h-9 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded-full cursor-pointer shadow-lg hover:scale-110 transition-all active:scale-95",
+                    validationErrors.avatar && "ring-4 ring-red-500 ring-offset-2"
+                  )}>
                     <Camera className="h-4 w-4 text-white" />
                     <input
                       type="file"
@@ -618,21 +738,69 @@ export default function MerchantCreatePage() {
                   label="Nome"
                   value={localAccount?.nome}
                   maxLength={100}
-                  onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, nome: val }) : null)}
+                  error={validationErrors.nome}
+                  onSave={(val) => {
+                    if (merchantUuid) {
+                      updateAccountBasico({ 
+                        nome: val, 
+                        apelido: localAccount?.slug, 
+                        id_categoria: localAccount?.id_categoria ?? localAccount?.categoria_id,
+                        id_loja: merchantUuid
+                      });
+                    }
+                    setLocalAccount(prev => prev ? ({ ...prev, nome: val }) : null);
+                    if (val.trim()) setValidationErrors(prev => {
+                      const n = { ...prev };
+                      delete n.nome;
+                      return n;
+                    });
+                  }}
                 />
                 <EditableField
                   label="Apelido"
                   value={localAccount?.slug}
                   maxLength={100}
                   isSlug
-                  error={slugError}
-                  onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, slug: val }) : null)}
+                  error={validationErrors.slug}
+                  onSave={(val) => {
+                    if (merchantUuid) {
+                      updateAccountBasico({ 
+                        nome: localAccount?.nome, 
+                        apelido: val, 
+                        id_categoria: localAccount?.id_categoria ?? localAccount?.categoria_id,
+                        id_loja: merchantUuid
+                      });
+                    }
+                    setLocalAccount(prev => prev ? ({ ...prev, slug: val }) : null);
+                    if (val.trim()) setValidationErrors(prev => {
+                      const n = { ...prev };
+                      delete n.slug;
+                      return n;
+                    });
+                  }}
                 />
                 <EditableSelect
                   label="Categoria"
                   value={localAccount?.id_categoria ?? localAccount?.categoria_id}
                   options={categorias.map(c => ({ id: c.categoria_id, name: c.categoria_nome }))}
-                  onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, id_categoria: parseInt(val), categoria_id: parseInt(val) }) : null)}
+                  error={validationErrors.id_categoria}
+                  onSave={(val) => {
+                    const catId = parseInt(val);
+                    if (merchantUuid) {
+                      updateAccountBasico({ 
+                        nome: localAccount?.nome, 
+                        apelido: localAccount?.slug, 
+                        id_categoria: catId,
+                        id_loja: merchantUuid
+                      });
+                    }
+                    setLocalAccount(prev => prev ? ({ ...prev, id_categoria: catId, categoria_id: catId }) : null);
+                    if (val) setValidationErrors(prev => {
+                      const n = { ...prev };
+                      delete n.id_categoria;
+                      return n;
+                    });
+                  }}
                 />
                 <div className="mt-2 flex items-center gap-2">
                     <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Progresso</span>
@@ -659,7 +827,10 @@ export default function MerchantCreatePage() {
                   <div className="space-y-6 pt-4">
                     <div className="flex flex-col items-center space-y-4 mb-6">
                       <div className="relative group">
-                        <div className="w-28 h-28 rounded-full overflow-hidden bg-slate-100 border-2 border-slate-200 shadow-inner">
+                        <div className={cn(
+                          "w-28 h-28 rounded-full overflow-hidden bg-slate-100 border-2 border-slate-200 shadow-inner",
+                          validationErrors.foto_bio && "ring-4 ring-red-500 ring-offset-2"
+                        )}>
                           {displayImages.bio ? (
                             <img src={displayImages.bio} alt="Foto da Bio" className="w-full h-full object-cover" />
                           ) : (
@@ -668,22 +839,94 @@ export default function MerchantCreatePage() {
                             </div>
                           )}
                         </div>
-                        <label className="absolute bottom-0 right-0 p-2 bg-[#2563eb] hover:bg-[#1d4ed8] rounded-full cursor-pointer shadow-md hover:scale-110 transition-all active:scale-95 text-white">
+                        <label className={cn(
+                          "absolute bottom-0 right-0 p-2 bg-[#2563eb] hover:bg-[#1d4ed8] rounded-full cursor-pointer shadow-md hover:scale-110 transition-all active:scale-95 text-white",
+                          validationErrors.foto_bio && "ring-4 ring-red-500 ring-offset-2 animate-bounce"
+                        )}>
                           <Camera className="h-4 w-4 text-white" />
                           <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'bio')} />
                         </label>
                       </div>
                       <div className="text-center">
-                        <p className="text-sm font-bold text-slate-900">Foto da biografia</p>
+                        <p className={cn(
+                          "text-sm font-bold",
+                          validationErrors.foto_bio ? "text-red-500" : "text-slate-900"
+                        )}>Foto da biografia</p>
                         <p className="text-xs text-slate-500 max-w-[240px] mt-1 leading-relaxed">
                           Esta foto aparece na seção "Sobre" da sua página, dando um toque pessoal para seus clientes.
                         </p>
+                        {validationErrors.foto_bio && (
+                          <p className="text-[10px] text-red-500 font-bold mt-1 uppercase tracking-wider animate-pulse">Obrigatória</p>
+                        )}
                       </div>
                     </div>
                     <div className="space-y-4">
-                      <EditableField label="Título" value={localPortfolio?.titulo} maxLength={100} onSave={(val) => setLocalPortfolio(prev => prev ? ({ ...prev, titulo: val }) : null)} />
-                      <EditableField label="Subtítulo" value={localPortfolio?.subtitulo} maxLength={500} onSave={(val) => setLocalPortfolio(prev => prev ? ({ ...prev, subtitulo: val }) : null)} />
-                      <EditableField label="Bio" value={localPortfolio?.bio} multiline onSave={(val) => setLocalPortfolio(prev => prev ? ({ ...prev, bio: val }) : null)} />
+                      <EditableField 
+                        label="Título" 
+                        value={localPortfolio?.titulo} 
+                        maxLength={100} 
+                        error={validationErrors.titulo}
+                        onSave={(val) => {
+                          if (merchantUuid) {
+                            updatePortfolioBasico({ 
+                              titulo: val, 
+                              subtitulo: localPortfolio?.subtitulo, 
+                              bio: localPortfolio?.bio,
+                              id_loja: merchantUuid 
+                            });
+                          }
+                          setLocalPortfolio(prev => prev ? ({ ...prev, titulo: val }) : null);
+                          if (val.trim()) setValidationErrors(prev => {
+                            const n = { ...prev };
+                            delete n.titulo;
+                            return n;
+                          });
+                        }} 
+                      />
+                      <EditableField 
+                        label="Subtítulo" 
+                        value={localPortfolio?.subtitulo} 
+                        maxLength={500} 
+                        error={validationErrors.subtitulo}
+                        onSave={(val) => {
+                          if (merchantUuid) {
+                            updatePortfolioBasico({ 
+                              titulo: localPortfolio?.titulo, 
+                              subtitulo: val, 
+                              bio: localPortfolio?.bio,
+                              id_loja: merchantUuid 
+                            });
+                          }
+                          setLocalPortfolio(prev => prev ? ({ ...prev, subtitulo: val }) : null);
+                          if (val.trim()) setValidationErrors(prev => {
+                            const n = { ...prev };
+                            delete n.subtitulo;
+                            return n;
+                          });
+                        }} 
+                      />
+                      <EditableField 
+                        label="Bio" 
+                        value={localPortfolio?.bio} 
+                        multiline 
+                        error={validationErrors.bio}
+                        onSave={(val) => {
+                          if (merchantUuid) {
+                            updatePortfolioBasico({ 
+                              titulo: localPortfolio?.titulo, 
+                              subtitulo: localPortfolio?.subtitulo, 
+                              bio: val,
+                              id_loja: merchantUuid 
+                            });
+                          }
+                          setLocalPortfolio(prev => prev ? ({ ...prev, bio: val }) : null);
+                          if (val.trim()) setValidationErrors(prev => {
+                            const n = { ...prev };
+                            delete n.bio;
+                            return n;
+                          });
+                        }} 
+                      />
                     </div>
                   </div>
                 </AccordionContent>
@@ -705,17 +948,65 @@ export default function MerchantCreatePage() {
                       label="Telefone" 
                       value={localAccount?.telefone} 
                       numericOnly 
-                      onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, telefone: val }) : null)} 
+                      error={validationErrors.telefone}
+                      onSave={(val) => {
+                        if (merchantUuid) {
+                          updateAccountContato({ 
+                            telefone: val, 
+                            email: localAccount?.email, 
+                            instagram: localAccount?.insta,
+                            id_loja: merchantUuid 
+                          });
+                        }
+                        setLocalAccount(prev => prev ? ({ ...prev, telefone: val }) : null);
+                        if (val.trim()) setValidationErrors(prev => {
+                          const n = { ...prev };
+                          delete n.telefone;
+                          return n;
+                        });
+                      }} 
                     />
                     <EditableField 
                       label="Email" 
                       value={localAccount?.email} 
-                      onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, email: val }) : null)} 
+                      error={validationErrors.email}
+                      onSave={(val) => {
+                        if (merchantUuid) {
+                          updateAccountContato({ 
+                            telefone: localAccount?.telefone, 
+                            email: val, 
+                            instagram: localAccount?.insta,
+                            id_loja: merchantUuid 
+                          });
+                        }
+                        setLocalAccount(prev => prev ? ({ ...prev, email: val }) : null);
+                        if (val.trim()) setValidationErrors(prev => {
+                          const n = { ...prev };
+                          delete n.email;
+                          return n;
+                        });
+                      }} 
                     />
                     <EditableField 
                       label="Instagram" 
                       value={localAccount?.insta} 
-                      onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, insta: val }) : null)} 
+                      error={validationErrors.insta}
+                      onSave={(val) => {
+                        if (merchantUuid) {
+                          updateAccountContato({ 
+                            telefone: localAccount?.telefone, 
+                            email: localAccount?.email, 
+                            instagram: val,
+                            id_loja: merchantUuid 
+                          });
+                        }
+                        setLocalAccount(prev => prev ? ({ ...prev, insta: val }) : null);
+                        if (val.trim()) setValidationErrors(prev => {
+                          const n = { ...prev };
+                          delete n.insta;
+                          return n;
+                        });
+                      }} 
                     />
                   </div>
                 </AccordionContent>
@@ -737,33 +1028,151 @@ export default function MerchantCreatePage() {
                       label="CEP" 
                       value={localAccount?.cep} 
                       numericOnly 
+                      error={validationErrors.cep}
                       onSave={async (val) => {
                         const cleanCep = val.replace(/\D/g, '');
                         if (cleanCep.length === 8) {
                           const address = await fetchAddress(cleanCep);
                           if (address) {
+                            const newAddressData = {
+                              cep: cleanCep,
+                              endereco: address.street || localAccount?.endereco || '',
+                              bairro: address.neighborhood || localAccount?.bairro || '',
+                              cidade: address.city || localAccount?.cidade || '',
+                              estado: address.state || localAccount?.estado || ''
+                            };
+
+                            if (merchantUuid) {
+                              updateAccountEndereco({
+                                ...newAddressData,
+                                id_loja: merchantUuid
+                              });
+                            }
+
                             setLocalAccount(prev => prev ? ({
                               ...prev,
-                              cep: cleanCep,
-                              endereco: address.street || prev.endereco,
-                              bairro: address.neighborhood || prev.bairro,
-                              cidade: address.city || prev.cidade,
-                              estado: address.state || prev.estado
+                              ...newAddressData
                             }) : null);
+                            
+                            // Limpa erros ao preencher via CEP
+                            setValidationErrors(prev => {
+                              const n = { ...prev };
+                              delete n.cep;
+                              if (address.street) delete n.endereco;
+                              if (address.neighborhood) delete n.bairro;
+                              if (address.city) delete n.cidade;
+                              if (address.state) delete n.estado;
+                              return n;
+                            });
                           } else {
+                            if (merchantUuid) {
+                              updateAccountEndereco({ 
+                                cep: cleanCep,
+                                id_loja: merchantUuid 
+                              });
+                            }
                             setLocalAccount(prev => prev ? ({ ...prev, cep: cleanCep }) : null);
                           }
                         } else {
-                            setLocalAccount(prev => prev ? ({ ...prev, cep: val }) : null);
+                          if (merchantUuid) {
+                            updateAccountEndereco({ 
+                              cep: val,
+                              id_loja: merchantUuid 
+                            });
+                          }
+                          setLocalAccount(prev => prev ? ({ ...prev, cep: val }) : null);
                         }
+                        if (val.trim()) setValidationErrors(prev => {
+                          const n = { ...prev };
+                          delete n.cep;
+                          return n;
+                        });
                       }} 
                     />
-                    <EditableField label="Endereço" value={localAccount?.endereco} onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, endereco: val }) : null)} />
-                    <EditableField label="Número" value={localAccount?.numero} onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, numero: val }) : null)} />
-                    <EditableField label="Complemento" value={localAccount?.complemento} onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, complemento: val }) : null)} />
-                    <EditableField label="Bairro" value={localAccount?.bairro} onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, bairro: val }) : null)} />
-                    <EditableField label="Cidade" value={localAccount?.cidade} onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, cidade: val }) : null)} />
-                    <EditableField label="Estado" value={localAccount?.estado} onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, estado: val }) : null)} />
+                    <EditableField 
+                      label="Endereço" 
+                      value={localAccount?.endereco} 
+                      error={validationErrors.endereco}
+                      onSave={(val) => {
+                        if (merchantUuid) updateAccountEndereco({ endereco: val, id_loja: merchantUuid });
+                        setLocalAccount(prev => prev ? ({ ...prev, endereco: val }) : null);
+                        if (val.trim()) setValidationErrors(prev => {
+                          const n = { ...prev };
+                          delete n.endereco;
+                          return n;
+                        });
+                      }} 
+                    />
+                    <EditableField 
+                      label="Número" 
+                      value={localAccount?.numero} 
+                      error={validationErrors.numero}
+                      onSave={(val) => {
+                        if (merchantUuid) updateAccountEndereco({ numero: val, id_loja: merchantUuid });
+                        setLocalAccount(prev => prev ? ({ ...prev, numero: val }) : null);
+                        if (val.trim()) setValidationErrors(prev => {
+                          const n = { ...prev };
+                          delete n.numero;
+                          return n;
+                        });
+                      }} 
+                    />
+                    <EditableField 
+                      label="Complemento" 
+                      value={localAccount?.complemento} 
+                      error={validationErrors.complemento}
+                      onSave={(val) => {
+                        if (merchantUuid) updateAccountEndereco({ complemento: val, id_loja: merchantUuid });
+                        setLocalAccount(prev => prev ? ({ ...prev, complemento: val }) : null);
+                        if (val.trim()) setValidationErrors(prev => {
+                          const n = { ...prev };
+                          delete n.complemento;
+                          return n;
+                        });
+                      }} 
+                    />
+                    <EditableField 
+                      label="Bairro" 
+                      value={localAccount?.bairro} 
+                      error={validationErrors.bairro}
+                      onSave={(val) => {
+                        if (merchantUuid) updateAccountEndereco({ bairro: val, id_loja: merchantUuid });
+                        setLocalAccount(prev => prev ? ({ ...prev, bairro: val }) : null);
+                        if (val.trim()) setValidationErrors(prev => {
+                          const n = { ...prev };
+                          delete n.bairro;
+                          return n;
+                        });
+                      }} 
+                    />
+                    <EditableField 
+                      label="Cidade" 
+                      value={localAccount?.cidade} 
+                      error={validationErrors.cidade}
+                      onSave={(val) => {
+                        if (merchantUuid) updateAccountEndereco({ cidade: val, id_loja: merchantUuid });
+                        setLocalAccount(prev => prev ? ({ ...prev, cidade: val }) : null);
+                        if (val.trim()) setValidationErrors(prev => {
+                          const n = { ...prev };
+                          delete n.cidade;
+                          return n;
+                        });
+                      }} 
+                    />
+                    <EditableField 
+                      label="Estado" 
+                      value={localAccount?.estado} 
+                      error={validationErrors.estado}
+                      onSave={(val) => {
+                        if (merchantUuid) updateAccountEndereco({ estado: val, id_loja: merchantUuid });
+                        setLocalAccount(prev => prev ? ({ ...prev, estado: val }) : null);
+                        if (val.trim()) setValidationErrors(prev => {
+                          const n = { ...prev };
+                          delete n.estado;
+                          return n;
+                        });
+                      }} 
+                    />
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -778,10 +1187,16 @@ export default function MerchantCreatePage() {
                       <span className="text-lg font-bold text-slate-900">Trabalhos</span>
                       <span className={cn(
                         "text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border",
-                        statusTrabalhos === "complete" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-blue-50 text-[#2563eb] border-blue-200/70"
+                        statusTrabalhos === "complete" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-blue-50 text-[#2563eb] border-blue-200/70",
+                        validationErrors.trabalhos && "bg-red-50 text-red-600 border-red-200"
                       )}>
                         {displayImages.gallery.length || 0} / 4 fotos
                       </span>
+                      {validationErrors.trabalhos && (
+                        <span className="text-[10px] text-red-500 font-bold mt-1 uppercase tracking-tight animate-pulse">
+                          {validationErrors.trabalhos}
+                        </span>
+                      )}
                     </div>
                     <SectionStatusIcon status={statusTrabalhos} />
                   </div>
@@ -832,10 +1247,55 @@ export default function MerchantCreatePage() {
                   <AccordionContent className="pb-6 pt-2 border-t border-slate-100">
                       <div className="space-y-6 pt-4">
                           <div className="space-y-4">
-                              <EditableField label="Google Analytics ID" value={localAccount?.g_analytcs} onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, g_analytcs: val }) : null)} />
-                              <EditableField label="Meta Pixel ID" value={localAccount?.meta_pixel_id || localAccount?.meta_pixel} onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, meta_pixel_id: val, meta_pixel: val }) : null)} />
-                              <EditableField label="Conta Google Ads" value={localAccount?.conta_google_ads} onSave={(val) => setLocalAccount(prev => prev ? ({ ...prev, conta_google_ads: val }) : null)} />
-                          </div>
+                        <EditableField 
+                          label="Google Analytics ID" 
+                          value={localAccount?.g_analytcs} 
+                          onSave={(val) => {
+                            if (merchantUuid) {
+                              updateAccountConfiguracoesAvancadas({ 
+                                g_analytcs: val, 
+                                meta_pixel_id: localAccount?.meta_pixel_id || localAccount?.meta_pixel, 
+                                conta_google_ads: localAccount?.conta_google_ads, 
+                                horario: localAccount?.horario,
+                                id_loja: merchantUuid 
+                              });
+                            }
+                            setLocalAccount(prev => prev ? ({ ...prev, g_analytcs: val }) : null);
+                          }} 
+                        />
+                        <EditableField 
+                          label="Meta Pixel ID" 
+                          value={localAccount?.meta_pixel_id || localAccount?.meta_pixel} 
+                          onSave={(val) => {
+                            if (merchantUuid) {
+                              updateAccountConfiguracoesAvancadas({ 
+                                g_analytcs: localAccount?.g_analytcs, 
+                                meta_pixel_id: val, 
+                                conta_google_ads: localAccount?.conta_google_ads, 
+                                horario: localAccount?.horario,
+                                id_loja: merchantUuid 
+                              });
+                            }
+                            setLocalAccount(prev => prev ? ({ ...prev, meta_pixel_id: val, meta_pixel: val }) : null);
+                          }} 
+                        />
+                        <EditableField 
+                          label="Conta Google Ads" 
+                          value={localAccount?.conta_google_ads} 
+                          onSave={(val) => {
+                            if (merchantUuid) {
+                              updateAccountConfiguracoesAvancadas({ 
+                                g_analytcs: localAccount?.g_analytcs, 
+                                meta_pixel_id: localAccount?.meta_pixel_id || localAccount?.meta_pixel, 
+                                conta_google_ads: val, 
+                                horario: localAccount?.horario,
+                                id_loja: merchantUuid 
+                              });
+                            }
+                            setLocalAccount(prev => prev ? ({ ...prev, conta_google_ads: val }) : null);
+                          }} 
+                        />
+                      </div>
                           <div className="pt-6 border-t border-slate-100">
                               <div className="flex items-center gap-2 mb-6">
                                   <div className="w-1.5 h-4 bg-[#2563eb] rounded-full" />
@@ -845,6 +1305,15 @@ export default function MerchantCreatePage() {
                                   {DAYS_MAP.map((day) => (
                                       <ScheduleItemEditor key={day.id} day={day} data={localAccount?.horario?.[day.id]} onUpdate={(dayData) => {
                                           const newHorario = { ...(localAccount?.horario || {}), [day.id]: dayData };
+                                          if (merchantUuid) {
+                                            updateAccountConfiguracoesAvancadas({ 
+                                              g_analytcs: localAccount?.g_analytcs, 
+                                              meta_pixel_id: localAccount?.meta_pixel_id || localAccount?.meta_pixel, 
+                                              conta_google_ads: localAccount?.conta_google_ads, 
+                                              horario: newHorario,
+                                              id_loja: merchantUuid 
+                                            });
+                                          }
                                           setLocalAccount(prev => prev ? ({ ...prev, horario: newHorario }) : null);
                                       }} />
                                   ))}
@@ -855,19 +1324,46 @@ export default function MerchantCreatePage() {
               </AccordionItem>
             </Accordion>
 
-            <div className="pt-6 border-t border-slate-100">
-              <Button 
-                onClick={handleConfirmarCadastro}
-                disabled={isCreating}
-                className="w-full h-12 gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50"
-              >
-                {isCreating ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Check className="h-5 w-5" />
-                )}
-                Confirmar Cadastro
-              </Button>
+            <div className="pt-6 border-t border-slate-100 space-y-3">
+              {(!isCreated && !merchantUuid) && (
+                <Button 
+                  onClick={handleConfirmarCadastro}
+                  disabled={isCreating}
+                  className="w-full h-12 gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {isCreating ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Check className="h-5 w-5" />
+                  )}
+                  Confirmar Cadastro
+                </Button>
+              )}
+              
+              {(isCreated || merchantUuid) && (
+                <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {isCreated && (
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-center">
+                      <p className="text-emerald-800 font-bold text-sm">Cadastro realizado com sucesso!</p>
+                      <p className="text-emerald-600 text-xs mt-1">Sua página já está online.</p>
+                    </div>
+                  )}
+                  <Button 
+                    onClick={() => window.open(`https://${createdSlug || localAccount?.slug}.guiatour.online`, '_blank')}
+                    className="w-full h-12 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+                  >
+                    <ExternalLink className="h-5 w-5" />
+                    Visualizar página {isCreated ? 'criada' : 'pública'}
+                  </Button>
+                  <Button 
+                    variant="ghost"
+                    onClick={() => navigate('/vendedor')}
+                    className="w-full h-12 text-slate-500 font-bold hover:bg-slate-100 rounded-2xl"
+                  >
+                    Voltar ao painel
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -884,8 +1380,11 @@ export default function MerchantCreatePage() {
             <Button variant="ghost" className="flex-1 text-slate-600 hover:bg-slate-100" onClick={() => setPhotoToDelete(null)}>Cancelar</Button>
             <Button 
               className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold" 
-              onClick={() => { 
+              onClick={async () => { 
                 if (photoToDelete !== null) { 
+                  if (merchantUuid) {
+                    await handleDeleteFoto(photoToDelete);
+                  }
                   setLocalPortfolio(prev => prev ? ({
                     ...prev,
                     itens: prev.itens.filter(item => item.id_foto !== photoToDelete)
@@ -895,42 +1394,6 @@ export default function MerchantCreatePage() {
               }}
             >
               Excluir
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <DialogContent className="bg-white border-slate-200 text-slate-900 rounded-[2rem] shadow-2xl max-w-sm mx-auto">
-          <DialogHeader className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-              <Check className="h-8 w-8 text-emerald-600" strokeWidth={3} />
-            </div>
-            <DialogTitle className="text-slate-900 text-2xl font-bold">Tudo pronto!</DialogTitle>
-            <DialogDescription className="text-slate-500 mt-2">
-              Seu perfil foi criado com sucesso e já está disponível para o mundo.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 my-2">
-            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1 text-center">Seu endereço web</p>
-            <p className="text-sm font-bold text-blue-600 text-center break-all">
-              https://{createdSlug}.guiatour.online
-            </p>
-          </div>
-          <DialogFooter className="flex flex-col gap-2 sm:flex-col pt-2">
-            <Button 
-              className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold h-12 rounded-xl"
-              onClick={() => window.open(`https://${createdSlug}.guiatour.online`, '_blank')}
-            >
-              <ExternalLink className="h-4 w-4 mr-2" />
-              Ver minha página
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full text-slate-500 font-bold"
-              onClick={() => navigate('/vendedor')}
-            >
-              Voltar ao painel
             </Button>
           </DialogFooter>
         </DialogContent>

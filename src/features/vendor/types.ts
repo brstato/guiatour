@@ -2,6 +2,7 @@ export type UserRole = 'vendedor' | 'comerciante';
 
 export interface Merchant {
   id: string;
+  uuid?: string;
   nome: string;
   telefone?: string;
   email?: string;
@@ -39,6 +40,12 @@ export interface CreateMerchantDTO {
   foto_capa: string;
   trabalhos: string;
   id_categoria: number;
+}
+
+export interface VendorMerchant {
+  uuid: string;
+  nome: string;
+  slug: string;
 }
 
 export interface MerchantListResponse {

@@ -54,13 +54,16 @@ class PortfolioService {
 
     /**
      * Atualiza informações básicas do portfólio (título, subtítulo e bio).
-     * @param data Objeto com os campos de texto básicos.
+     * @param data Objeto com os campos de texto básicos e id_loja opcional.
      */
-    async updatePortfolioBasico(data: { titulo?: string; subtitulo?: string; bio?: string }): Promise<any> {
+    async updatePortfolioBasico(data: { titulo?: string; subtitulo?: string; bio?: string; id_loja?: string }): Promise<any> {
+        const id = data.id_loja || localStorage.getItem("id_loja") || undefined;
         const payload = {
             titulo: data.titulo ?? "",
             subtitulo: data.subtitulo ?? "",
             bio: data.bio ?? "",
+            id_loja: id,
+            uuid: id
         };
         const response = await api.post('portfolio/update_portifolio_basico', payload);
         return response.data;

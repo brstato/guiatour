@@ -61,9 +61,9 @@ export function usePortfolioController() {
 
     /**
      * Lida com a atualização dos campos básicos (título, subtítulo, bio).
-     * @param updateData Dados parciais de texto.
+     * @param updateData Dados parciais de texto e id_loja opcional.
      */
-    const handleUpdateBasico = async (updateData: { titulo?: string; subtitulo?: string; bio?: string }) => {
+    const handleUpdateBasico = async (updateData: { titulo?: string; subtitulo?: string; bio?: string; id_loja?: string }) => {
         const mergedData = data ? {
             ...data,
             titulo: updateData.titulo ?? data.titulo ?? "",
@@ -77,10 +77,13 @@ export function usePortfolioController() {
 
         setData(mergedData as PortfolioData);
         try {
-            await portfolioService.updatePortfolioBasico(mergedData);
+            await portfolioService.updatePortfolioBasico({
+                ...updateData,
+                id_loja: updateData.id_loja
+            });
         } catch (error) {
             console.error("Erro ao atualizar portfólio básico:", error);
-            await loadData();
+            await loadData(updateData.id_loja);
         }
     };
 

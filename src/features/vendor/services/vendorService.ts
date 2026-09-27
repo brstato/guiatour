@@ -1,7 +1,15 @@
 import { api } from '@/services/api';
-import type { Merchant, CreateMerchantDTO, MerchantListResponse } from '../types';
+import type { Merchant, CreateMerchantDTO, MerchantListResponse, VendorMerchant } from '../types';
 
 class VendorService {
+  /**
+   * Obtém a lista simplificada de comércios do vendedor.
+   */
+  async listMerchants(): Promise<VendorMerchant[]> {
+    const response = await api.get('vendedor/comercios');
+    return response.data.itens;
+  }
+
   /**
    * Obtém a lista de comerciantes vinculados ao vendedor autenticado.
    */
@@ -23,9 +31,9 @@ class VendorService {
   /**
    * Cadastra um novo comerciante.
    */
-  async createMerchant(data: CreateMerchantDTO): Promise<Merchant> {
+  async createMerchant(data: CreateMerchantDTO): Promise<{ data: Merchant; status: number }> {
     const response = await api.post('vendedor/comercio', data);
-    return response.data;
+    return { data: response.data, status: response.status };
   }
 
   /**

@@ -29,8 +29,15 @@ class AccountService {
      * Atualiza dados básicos do perfil (nome e apelido).
      * @param data Objeto com nome e/ou apelido.
      */
-    async updateAccountBasico(data: { nome?: string; apelido?: string; id_categoria?: number }): Promise<any> {
-        const response = await api.post('account/update_account_basico', data);
+    async updateAccountBasico(data: { nome?: string; apelido?: string; id_categoria?: number; id_loja?: string }): Promise<any> {
+        const id = data.id_loja || localStorage.getItem("id_loja") || undefined;
+        const payload = {
+            ...data,
+            id_loja: id,
+            uuid: id,
+            id: id
+        };
+        const response = await api.post('account/update_account_basico', payload);
         return response.data;
     }
 
@@ -38,11 +45,15 @@ class AccountService {
      * Atualiza informações de contato (telefone, e-mail público, instagram).
      * @param data Dados de contato.
      */
-    async updateAccountContato(data: { telefone?: string; email?: string; instagram?: string }): Promise<any> {
+    async updateAccountContato(data: { telefone?: string; email?: string; instagram?: string; id_loja?: string }): Promise<any> {
+        const id = data.id_loja || localStorage.getItem("id_loja") || undefined;
         const payload = {
             telefone: data.telefone ?? "",
             email: data.email ?? "",
             instagram: data.instagram ?? "",
+            id_loja: id,
+            uuid: id,
+            id: id
         };
         const response = await api.post('account/contato', payload);
         return response.data;
@@ -52,7 +63,8 @@ class AccountService {
      * Atualiza o endereço associado à conta.
      * @param data Dados parciais de endereço.
      */
-    async updateEndereco(data: Partial<AccountData>): Promise<any> {
+    async updateEndereco(data: Partial<AccountData> & { id_loja?: string }): Promise<any> {
+        const id = data.id_loja || localStorage.getItem("id_loja") || undefined;
         const payload = {
             cep: data.cep ?? "",
             endereco: data.endereco ?? "",
@@ -61,6 +73,9 @@ class AccountService {
             cidade: data.cidade ?? "",
             estado: data.estado ?? "",
             complemento: data.complemento ?? "",
+            id_loja: id,
+            uuid: id,
+            id: id
         };
         const response = await api.post('account/update_endereco', payload);
         return response.data;
@@ -70,12 +85,16 @@ class AccountService {
      * Atualiza configurações de marketing e analytics.
      * @param data IDs de rastreamento e tags.
      */
-    async updateConfiguracoesAvancadas(data: { g_analytcs?: string; meta_pixel_id?: string; conta_google_ads?: string; horario?: any }): Promise<any> {
+    async updateConfiguracoesAvancadas(data: { g_analytcs?: string; meta_pixel_id?: string; conta_google_ads?: string; horario?: any; id_loja?: string }): Promise<any> {
+        const id = data.id_loja || localStorage.getItem("id_loja") || undefined;
         const payload = {
             g_analytcs: data.g_analytcs ?? "",
             meta_pixel_id: data.meta_pixel_id ?? "",
             conta_google_ads: data.conta_google_ads ?? "",
             horario: data.horario ?? {},
+            id_loja: id,
+            uuid: id,
+            id: id
         };
         const response = await api.post('account/update_configuracoes_avancadas', payload);
         return response.data;

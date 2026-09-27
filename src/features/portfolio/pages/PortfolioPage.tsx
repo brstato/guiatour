@@ -66,8 +66,19 @@ function ScheduleItemEditor({
     onUpdate: (data: { aberto: boolean, inicio: string, fim: string }) => void
 }) {
     const aberto = data?.aberto ?? false;
-    const inicio = data?.inicio ?? "09:00";
-    const fim = data?.fim ?? "18:00";
+    const [localInicio, setLocalInicio] = useState(data?.inicio ?? "09:00");
+    const [localFim, setLocalFim] = useState(data?.fim ?? "18:00");
+
+    useEffect(() => {
+        setLocalInicio(data?.inicio ?? "09:00");
+        setLocalFim(data?.fim ?? "18:00");
+    }, [data?.inicio, data?.fim]);
+
+    const handleBlur = () => {
+        if (localInicio !== (data?.inicio ?? "09:00") || localFim !== (data?.fim ?? "18:00")) {
+            onUpdate({ aberto, inicio: localInicio, fim: localFim });
+        }
+    };
 
     return (
         <div className={cn(
@@ -77,7 +88,7 @@ function ScheduleItemEditor({
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div
-                        onClick={() => onUpdate({ aberto: !aberto, inicio, fim })}
+                        onClick={() => onUpdate({ aberto: !aberto, inicio: localInicio, fim: localFim })}
                         className={cn(
                             "w-12 h-6 rounded-full relative transition-all duration-300 cursor-pointer p-1",
                             aberto ? "bg-[#2563eb]" : "bg-slate-300"
@@ -108,8 +119,9 @@ function ScheduleItemEditor({
                         <div className="flex flex-col w-full">
                             <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Início</span>
                             <select
-                                value={inicio}
-                                onChange={(e) => onUpdate({ aberto, inicio: e.target.value, fim })}
+                                value={localInicio}
+                                onChange={(e) => setLocalInicio(e.target.value)}
+                                onBlur={handleBlur}
                                 className="bg-transparent text-sm font-bold text-slate-800 outline-none appearance-none cursor-pointer w-full"
                             >
                                 {HOUR_OPTIONS.map(h => <option key={h} value={h} className="bg-white text-slate-800">{h}</option>)}
@@ -123,8 +135,9 @@ function ScheduleItemEditor({
                         <div className="flex flex-col w-full">
                             <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Fim</span>
                             <select
-                                value={fim}
-                                onChange={(e) => onUpdate({ aberto, inicio, fim: e.target.value })}
+                                value={localFim}
+                                onChange={(e) => setLocalFim(e.target.value)}
+                                onBlur={handleBlur}
                                 className="bg-transparent text-sm font-bold text-slate-800 outline-none appearance-none cursor-pointer w-full"
                             >
                                 {HOUR_OPTIONS.map(h => <option key={h} value={h} className="bg-white text-slate-800">{h}</option>)}
@@ -267,10 +280,10 @@ function EditableSelect({
         setLocalValue(value || '');
     }, [value]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const val = e.target.value;
-        setLocalValue(val);
-        onSave(val);
+    const handleBlur = () => {
+        if (localValue !== (value || '')) {
+            onSave(localValue.toString());
+        }
     };
 
     const isDark = theme === "dark";
@@ -288,7 +301,8 @@ function EditableSelect({
             <div className="relative">
                 <select
                     value={localValue}
-                    onChange={handleChange}
+                    onChange={(e) => setLocalValue(e.target.value)}
+                    onBlur={handleBlur}
                     className={cn(
                         "w-full bg-transparent border-none p-0 h-auto text-sm font-semibold focus:outline-none focus:border-b-2 focus:border-[#2563eb] rounded-none transition-none shadow-none appearance-none cursor-pointer",
                         isDark ? "text-white" : "text-slate-900",
@@ -559,7 +573,8 @@ export function PortfolioPage() {
                             onSave={(val) => handleUpdateBasico({ 
                                 nome: val, 
                                 apelido: account?.slug, 
-                                id_categoria: account?.id_categoria ?? account?.categoria_id 
+                                id_categoria: account?.id_categoria ?? account?.categoria_id,
+                                id_loja: userId || undefined 
                             })}
                         />
                         <EditableField
@@ -573,7 +588,8 @@ export function PortfolioPage() {
                                 const result = await handleUpdateBasico({ 
                                     nome: account?.nome, 
                                     apelido: val, 
-                                    id_categoria: account?.id_categoria ?? account?.categoria_id 
+                                    id_categoria: account?.id_categoria ?? account?.categoria_id,
+                                    id_loja: userId || undefined 
                                 });
                                 if (result && !result.success && result.status === 409) {
                                     setSlugError("Este nome de usuário não está disponível");
@@ -584,7 +600,12 @@ export function PortfolioPage() {
                             label="Categoria"
                             value={account?.id_categoria ?? account?.categoria_id}
                             options={categorias.map(c => ({ id: c.categoria_id, name: c.categoria_nome }))}
-                            onSave={(val) => handleUpdateBasico({ nome: account?.nome, apelido: account?.slug, id_categoria: parseInt(val) })}
+                            onSave={(val) => handleUpdateBasico({ 
+                                nome: account?.nome, 
+                                apelido: account?.slug, 
+                                id_categoria: parseInt(val),
+                                id_loja: userId || undefined 
+                            })}
                         />
                         <div className="mt-2 flex items-center gap-2">
                             <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Perfil</span>
@@ -651,9 +672,9 @@ export function PortfolioPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-4">
-                                    <EditableField label="Título" value={portfolio?.titulo} maxLength={100} onSave={(val) => updatePortfolioBasico({ titulo: val, subtitulo: portfolio?.subtitulo, bio: portfolio?.bio })} />
-                                    <EditableField label="Subtítulo" value={portfolio?.subtitulo} maxLength={500} onSave={(val) => updatePortfolioBasico({ titulo: portfolio?.titulo, subtitulo: val, bio: portfolio?.bio })} />
-                                    <EditableField label="Bio" value={portfolio?.bio} multiline onSave={(val) => updatePortfolioBasico({ titulo: portfolio?.titulo, subtitulo: portfolio?.subtitulo, bio: val })} />
+                                    <EditableField label="Título" value={portfolio?.titulo} maxLength={100} onSave={(val) => updatePortfolioBasico({ titulo: val, subtitulo: portfolio?.subtitulo, bio: portfolio?.bio, id_loja: userId || undefined })} />
+                                    <EditableField label="Subtítulo" value={portfolio?.subtitulo} maxLength={500} onSave={(val) => updatePortfolioBasico({ titulo: portfolio?.titulo, subtitulo: val, bio: portfolio?.bio, id_loja: userId || undefined })} />
+                                    <EditableField label="Bio" value={portfolio?.bio} multiline onSave={(val) => updatePortfolioBasico({ titulo: portfolio?.titulo, subtitulo: portfolio?.subtitulo, bio: val, id_loja: userId || undefined })} />
                                 </div>
                             </div>
                         </AccordionContent>
@@ -683,9 +704,9 @@ export function PortfolioPage() {
                         </AccordionTrigger>
                         <AccordionContent className="pb-6 pt-2 border-t border-slate-100">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <EditableField label="Telefone" value={account?.telefone} numericOnly onSave={(val) => updateAccountContato({ telefone: val, email: account?.email, instagram: account?.insta })} />
-                                <EditableField label="Email" value={account?.email} onSave={(val) => updateAccountContato({ telefone: account?.telefone, email: val, instagram: account?.insta })} />
-                                <EditableField label="Instagram" value={account?.insta} onSave={(val) => updateAccountContato({ telefone: account?.telefone, email: account?.email, instagram: val })} />
+                                <EditableField label="Telefone" value={account?.telefone} numericOnly onSave={(val) => updateAccountContato({ telefone: val, email: account?.email, instagram: account?.insta, id_loja: userId || undefined })} />
+                                <EditableField label="Email" value={account?.email} onSave={(val) => updateAccountContato({ telefone: account?.telefone, email: val, instagram: account?.insta, id_loja: userId || undefined })} />
+                                <EditableField label="Instagram" value={account?.insta} onSave={(val) => updateAccountContato({ telefone: account?.telefone, email: account?.email, instagram: val, id_loja: userId || undefined })} />
                             </div>
                         </AccordionContent>
                     </AccordionItem>
@@ -724,17 +745,18 @@ export function PortfolioPage() {
                                                 endereco: address.street || account?.endereco,
                                                 bairro: address.neighborhood || account?.bairro,
                                                 cidade: address.city || account?.cidade,
-                                                estado: address.state || account?.estado
+                                                estado: address.state || account?.estado,
+                                                id_loja: userId || undefined
                                             });
                                         }
                                     }
                                 }} />
-                                <EditableField label="Endereço" value={account?.endereco} onSave={(val) => handleUpdateEndereco({ endereco: val })} />
-                                <EditableField label="Número" value={account?.numero} onSave={(val) => handleUpdateEndereco({ numero: val })} />
-                                <EditableField label="Complemento" value={account?.complemento} onSave={(val) => handleUpdateEndereco({ complemento: val })} />
-                                <EditableField label="Bairro" value={account?.bairro} onSave={(val) => handleUpdateEndereco({ bairro: val })} />
-                                <EditableField label="Cidade" value={account?.cidade} onSave={(val) => handleUpdateEndereco({ cidade: val })} />
-                                <EditableField label="Estado" value={account?.estado} onSave={(val) => handleUpdateEndereco({ estado: val })} />
+                                <EditableField label="Endereço" value={account?.endereco} onSave={(val) => handleUpdateEndereco({ endereco: val, id_loja: userId || undefined })} />
+                                <EditableField label="Número" value={account?.numero} onSave={(val) => handleUpdateEndereco({ numero: val, id_loja: userId || undefined })} />
+                                <EditableField label="Complemento" value={account?.complemento} onSave={(val) => handleUpdateEndereco({ complemento: val, id_loja: userId || undefined })} />
+                                <EditableField label="Bairro" value={account?.bairro} onSave={(val) => handleUpdateEndereco({ bairro: val, id_loja: userId || undefined })} />
+                                <EditableField label="Cidade" value={account?.cidade} onSave={(val) => handleUpdateEndereco({ cidade: val, id_loja: userId || undefined })} />
+                                <EditableField label="Estado" value={account?.estado} onSave={(val) => handleUpdateEndereco({ estado: val, id_loja: userId || undefined })} />
                             </div>
                         </AccordionContent>
                     </AccordionItem>
@@ -883,9 +905,9 @@ export function PortfolioPage() {
                         <AccordionContent className="pb-6 pt-2 border-t border-slate-100">
                             <div className="space-y-6 pt-4">
                                 <div className="space-y-4">
-                                    <EditableField label="Google Analytics ID" value={account?.g_analytcs} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: val, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: account?.conta_google_ads, horario: account?.horario })} />
-                                    <EditableField label="Meta Pixel ID" value={account?.meta_pixel_id || account?.meta_pixel} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: account?.g_analytcs, meta_pixel_id: val, conta_google_ads: account?.conta_google_ads, horario: account?.horario })} />
-                                    <EditableField label="Conta Google Ads" value={account?.conta_google_ads} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: account?.g_analytcs, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: val, horario: account?.horario })} />
+                                    <EditableField label="Google Analytics ID" value={account?.g_analytcs} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: val, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: account?.conta_google_ads, horario: account?.horario, id_loja: userId || undefined })} />
+                                    <EditableField label="Meta Pixel ID" value={account?.meta_pixel_id || account?.meta_pixel} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: account?.g_analytcs, meta_pixel_id: val, conta_google_ads: account?.conta_google_ads, horario: account?.horario, id_loja: userId || undefined })} />
+                                    <EditableField label="Conta Google Ads" value={account?.conta_google_ads} onSave={(val) => updateAccountConfiguracoesAvancadas({ g_analytcs: account?.g_analytcs, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: val, horario: account?.horario, id_loja: userId || undefined })} />
                                 </div>
                                 <div className="pt-6 border-t border-slate-100">
                                     <div className="flex items-center gap-2 mb-6">
@@ -896,7 +918,7 @@ export function PortfolioPage() {
                                         {DAYS_MAP.map((day) => (
                                             <ScheduleItemEditor key={day.id} day={day} data={account?.horario?.[day.id]} onUpdate={(dayData) => {
                                                 const newHorario = { ...(account?.horario || {}), [day.id]: dayData };
-                                                updateAccountConfiguracoesAvancadas({ g_analytcs: account?.g_analytcs, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: account?.conta_google_ads, horario: newHorario });
+                                                updateAccountConfiguracoesAvancadas({ g_analytcs: account?.g_analytcs, meta_pixel_id: account?.meta_pixel_id || account?.meta_pixel, conta_google_ads: account?.conta_google_ads, horario: newHorario, id_loja: userId || undefined });
                                             }} />
                                         ))}
                                     </div>

@@ -1,21 +1,39 @@
-import { Plus, Search, Loader2, AlertCircle } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Plus, Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useVendorController } from "../hooks/useVendorController";
-import { MerchantList } from "../components/MerchantList";
-import { EmptyMerchantsState } from "../components/EmptyMerchantsState";
 import { VendorHeader } from "../components/VendorHeader";
 import { useNavigate } from "react-router-dom";
 
 export default function VendorDashboardPage() {
   const { 
-    merchants, 
-    isLoading, 
-    error, 
-    selectMerchant, 
-    reload 
+    vendorMerchants,
+    isLoadingVendorMerchants,
   } = useVendorController();
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredMerchants = useMemo(() => {
+    if (!searchTerm.trim()) return vendorMerchants;
+    
+    const term = searchTerm.toLowerCase();
+    return vendorMerchants.filter(
+      (item) => 
+        item.nome.toLowerCase().includes(term) || 
+        item.slug.toLowerCase().includes(term)
+    );
+  }, [vendorMerchants, searchTerm]);
+
+  const handleVisualizar = (uuid: string) => {
+    localStorage.setItem("id_loja", uuid);
+    navigate('/vendedor/comerciantes/novo');
+  };
+
+  const handleNovoComerciante = () => {
+    localStorage.removeItem("id_loja");
+    navigate('/vendedor/comerciantes/novo');
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -34,7 +52,7 @@ export default function VendorDashboardPage() {
             </div>
 
             <Button 
-              onClick={() => navigate('/vendedor/comerciantes/novo')}
+              onClick={handleNovoComerciante}
               className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-100 h-11 px-6"
             >
               <Plus className="h-4.5 w-4.5" />
@@ -43,50 +61,44 @@ export default function VendorDashboardPage() {
           </div>
 
           <div className="bg-white rounded-2xl border border-slate-200/60 shadow-xs p-6 mb-8">
-            <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-8">
-              <h2 className="text-xl font-bold text-slate-800 self-start sm:self-center">
-                Seus Comerciantes
-                {merchants.length > 0 && (
-                  <span className="ml-2 text-sm font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                    {merchants.length}
-                  </span>
-                )}
-              </h2>
+            <h2 className="text-xl font-bold text-slate-800 mb-6">
+              Comércios Criados
+            </h2>
 
               <div className="relative w-full sm:w-72">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input 
                   placeholder="Buscar comércio..." 
                   className="pl-10 h-10 border-slate-200 focus-visible:ring-blue-500 bg-slate-50/50"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
+              </div>            
+            
+            {isLoadingVendorMerchants ? (
+              <div className="flex justify-center py-10">
+                <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
               </div>
-            </div>
-
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-20">
-                <Loader2 className="h-10 w-10 text-blue-500 animate-spin mb-4" />
-                <p className="text-slate-500 font-medium">Carregando comerciantes...</p>
+            ) : filteredMerchants.length > 0 ? (
+              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                {filteredMerchants.map((item) => (
+                  <div key={item.uuid} className="flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100/80 transition-colors rounded-xl border border-slate-100 group">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-slate-900 truncate">{item.nome}</h3>
+                      <p className="text-sm text-slate-500 truncate">/{item.slug}</p>
+                    </div>
+                    <Button 
+                      variant="outline"
+                      onClick={() => handleVisualizar(item.uuid)}
+                      className="ml-4 bg-white text-blue-600 border-blue-100 hover:bg-blue-50 hover:border-blue-200 font-bold shrink-0 shadow-sm"
+                    >
+                      Visualizar
+                    </Button>
+                  </div>
+                ))}
               </div>
-            ) : error ? (
-              <div className="flex flex-col items-center justify-center py-20 px-6 border-2 border-red-50 bg-red-50/20 rounded-2xl text-center">
-                <AlertCircle className="h-10 w-10 text-red-500 mb-4" />
-                <h3 className="text-lg font-bold text-red-900 mb-1">
-                  Erro ao carregar comerciantes
-                </h3>
-                <p className="text-red-600/80 mb-6 max-w-xs">
-                  Não foi possível conectar ao servidor. Verifique sua conexão.
-                </p>
-                <Button variant="outline" onClick={() => reload()} className="border-red-200 text-red-700 hover:bg-red-50">
-                  Tentar Novamente
-                </Button>
-              </div>
-            ) : merchants.length > 0 ? (
-              <MerchantList 
-                merchants={merchants} 
-                onEdit={selectMerchant} 
-              />
             ) : (
-              <EmptyMerchantsState />
+              <p className="text-slate-500 text-center py-10">Nenhum comércio encontrado.</p>
             )}
           </div>
         </div>
