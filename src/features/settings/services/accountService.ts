@@ -73,6 +73,8 @@ class AccountService {
             cidade: data.cidade ?? "",
             estado: data.estado ?? "",
             complemento: data.complemento ?? "",
+            latitude: String(data.latitude ?? ""),
+            longitude: String(data.longitude ?? ""),
             id_loja: id,
             uuid: id,
             id: id

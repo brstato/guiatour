@@ -40,6 +40,8 @@ export interface CreateMerchantDTO {
   foto_capa: string;
   trabalhos: string;
   id_categoria: number;
+  latitude: string;
+  longitude: string;
 }
 
 export interface VendorMerchant {

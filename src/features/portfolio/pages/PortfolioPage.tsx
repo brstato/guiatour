@@ -746,6 +746,8 @@ export function PortfolioPage() {
                                                 bairro: address.neighborhood || account?.bairro,
                                                 cidade: address.city || account?.cidade,
                                                 estado: address.state || account?.estado,
+                                                latitude: address.location?.coordinates.latitude || account?.latitude || 0,
+                                                longitude: address.location?.coordinates.longitude || account?.longitude || 0,
                                                 id_loja: userId || undefined
                                             });
                                         }
@@ -757,6 +759,8 @@ export function PortfolioPage() {
                                 <EditableField label="Bairro" value={account?.bairro} onSave={(val) => handleUpdateEndereco({ bairro: val, id_loja: userId || undefined })} />
                                 <EditableField label="Cidade" value={account?.cidade} onSave={(val) => handleUpdateEndereco({ cidade: val, id_loja: userId || undefined })} />
                                 <EditableField label="Estado" value={account?.estado} onSave={(val) => handleUpdateEndereco({ estado: val, id_loja: userId || undefined })} />
+                                <EditableField label="Latitude" value={account?.latitude?.toString()} onSave={(val) => handleUpdateEndereco({ latitude: parseFloat(val) || 0, id_loja: userId || undefined })} />
+                                <EditableField label="Longitude" value={account?.longitude?.toString()} onSave={(val) => handleUpdateEndereco({ longitude: parseFloat(val) || 0, id_loja: userId || undefined })} />
                             </div>
                         </AccordionContent>
                     </AccordionItem>

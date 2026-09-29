@@ -412,12 +412,20 @@ export default function MerchantCreatePage() {
     loadPortfolio(merchantUuid || undefined);
   }, [loadAccount, loadPortfolio, merchantUuid]);
 
-  // Sincroniza dados iniciais apenas uma vez para não perder alterações locais após o cadastro
+  // Sincroniza dados iniciais e atualiza latitude/longitude se vierem do backend
   useEffect(() => {
-    if (accountData && !localAccount) {
-      setLocalAccount(accountData);
+    if (accountData) {
+      setLocalAccount(prev => {
+        if (!prev) return accountData;
+        // Mantém as alterações locais, mas garante que latitude e longitude sejam preenchidas se vierem no payload
+        return {
+          ...prev,
+          latitude: accountData.latitude ?? prev.latitude,
+          longitude: accountData.longitude ?? prev.longitude,
+        };
+      });
     }
-  }, [accountData, localAccount]);
+  }, [accountData]);
 
   useEffect(() => {
     if (portfolioData && !localPortfolio) {
@@ -572,7 +580,9 @@ export default function MerchantCreatePage() {
         nome_arquivo: img.name,
         itemTrabalho: cleanBase64(img.base64)
       }))),
-      id_categoria: localAccount.id_categoria || localAccount.categoria_id || 0
+      id_categoria: localAccount.id_categoria || localAccount.categoria_id || 0,
+      latitude: String(localAccount.latitude ?? ''),
+      longitude: String(localAccount.longitude ?? '')
     };
 
     try {
@@ -1048,7 +1058,9 @@ export default function MerchantCreatePage() {
                               endereco: address.street || localAccount?.endereco || '',
                               bairro: address.neighborhood || localAccount?.bairro || '',
                               cidade: address.city || localAccount?.cidade || '',
-                              estado: address.state || localAccount?.estado || ''
+                              estado: address.state || localAccount?.estado || '',
+                              latitude: address.location?.coordinates.latitude || localAccount?.latitude || 0,
+                              longitude: address.location?.coordinates.longitude || localAccount?.longitude || 0
                             };
 
                             if (merchantUuid) {
@@ -1178,6 +1190,36 @@ export default function MerchantCreatePage() {
                         if (val.trim()) setValidationErrors(prev => {
                           const n = { ...prev };
                           delete n.estado;
+                          return n;
+                        });
+                      }} 
+                    />
+                    <EditableField 
+                      label="Latitude" 
+                      value={localAccount?.latitude?.toString() || ''} 
+                      error={validationErrors.latitude}
+                      onSave={(val) => {
+                        const numVal = parseFloat(val) || 0;
+                        if (merchantUuid) updateAccountEndereco({ latitude: numVal, id_loja: merchantUuid });
+                        setLocalAccount(prev => prev ? ({ ...prev, latitude: numVal }) : null);
+                        if (val.trim()) setValidationErrors(prev => {
+                          const n = { ...prev };
+                          delete n.latitude;
+                          return n;
+                        });
+                      }} 
+                    />       
+                    <EditableField 
+                      label="Longitude" 
+                      value={localAccount?.longitude?.toString() || ''} 
+                      error={validationErrors.longitude}
+                      onSave={(val) => {
+                        const numVal = parseFloat(val) || 0;
+                        if (merchantUuid) updateAccountEndereco({ longitude: numVal, id_loja: merchantUuid });
+                        setLocalAccount(prev => prev ? ({ ...prev, longitude: numVal }) : null);
+                        if (val.trim()) setValidationErrors(prev => {
+                          const n = { ...prev };
+                          delete n.longitude;
                           return n;
                         });
                       }} 
