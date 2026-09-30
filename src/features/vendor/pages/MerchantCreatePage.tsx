@@ -459,7 +459,7 @@ export default function MerchantCreatePage() {
       
       if (merchantUuid) {
         const idSite = localPortfolio?.id_site || 0;
-        await uploadFile(type, sanitizedName, base64String, idSite);
+        await uploadFile(type, sanitizedName, base64String, idSite, merchantUuid);
       } else {
         // Armazena localmente para o payload final apenas se não foi criado ainda
         if (type === 'gallery') {
@@ -1260,7 +1260,7 @@ export default function MerchantCreatePage() {
                         <Button 
                           variant="secondary" 
                           size="icon" 
-                          className="absolute bottom-2 left-2 h-7 w-7 rounded-full shadow-md bg-slate-900/80 hover:bg-red-600 text-white border-none cursor-pointer transition-colors" 
+                          className="absolute top-2 right-2 h-7 w-7 rounded-full shadow-md bg-slate-900/80 hover:bg-red-600 text-white border-none cursor-pointer transition-colors" 
                           onClick={() => {
                             if (typeof item.id_foto === 'number' && item.id_foto > 1000000000) {
                               // É uma imagem local (timestamp)
@@ -1434,7 +1434,7 @@ export default function MerchantCreatePage() {
               onClick={async () => { 
                 if (photoToDelete !== null) { 
                   if (merchantUuid) {
-                    await handleDeleteFoto(photoToDelete);
+                    await handleDeleteFoto(photoToDelete, merchantUuid);
                   }
                   setLocalPortfolio(prev => prev ? ({
                     ...prev,

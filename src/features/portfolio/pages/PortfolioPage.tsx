@@ -427,7 +427,7 @@ export function PortfolioPage() {
             // Sanitiza o nome do arquivo para evitar problemas com espaços e caracteres especiais em URLs
             const sanitizedName = file.name.replace(/\s+/g, '_');
             
-            await uploadFile(type, sanitizedName, base64String, idSite);
+            await uploadFile(type, sanitizedName, base64String, idSite, userId || undefined);
         } catch (error: any) {
             console.error('Erro ao processar/enviar imagem:', error);
             const errorMessage = error?.response?.data?.error || error?.response?.data?.message || error?.message || 'Erro desconhecido';
@@ -959,7 +959,7 @@ export function PortfolioPage() {
                     </DialogHeader>
                     <DialogFooter className="border-t border-slate-100 pt-4 flex flex-row gap-3">
                         <Button variant="ghost" className="flex-1 text-slate-600 hover:bg-slate-100" onClick={() => setPhotoToDelete(null)}>Cancelar</Button>
-                        <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold" onClick={async () => { if (photoToDelete !== null) { await handleDeleteFoto(photoToDelete); setPhotoToDelete(null); } }}>Excluir</Button>
+                        <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold" onClick={async () => { if (photoToDelete !== null) { await handleDeleteFoto(photoToDelete, userId || undefined); setPhotoToDelete(null); } }}>Excluir</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

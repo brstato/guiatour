@@ -74,7 +74,10 @@ export default function VendorDashboardPage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <Button 
                 variant="outline"
-                onClick={() => navigate('/vendedor/pontos/novo')}
+                onClick={() => {
+                  localStorage.removeItem("id_ponto_turistico");
+                  navigate('/vendedor/pontos/novo');
+                }}
                 className="gap-2 text-blue-600 border-blue-100 hover:bg-blue-50 font-bold h-11 px-6 shadow-sm"
               >
                 <Plus className="h-4.5 w-4.5" />
@@ -175,7 +178,10 @@ export default function VendorDashboardPage() {
                       </div>
                       <Button 
                         variant="outline"
-                        onClick={() => navigate(`/vendedor/pontos/${item.uuid}`)}
+                        onClick={() => {
+                          localStorage.setItem("id_ponto_turistico", item.uuid);
+                          navigate(`/vendedor/pontos/${item.uuid}`);
+                        }}
                         className="ml-4 bg-white text-blue-600 border-blue-100 hover:bg-blue-50 hover:border-blue-200 font-bold shrink-0 shadow-sm"
                       >
                         Editar

@@ -61,7 +61,9 @@ interface FormState {
 export default function TouristSpotFormPage() {
   const { uuid } = useParams<{ uuid: string }>();
   const navigate = useNavigate();
-  const isEditing = !!uuid;
+  
+  const [spotUuid, setSpotUuid] = useState<string | null>(() => uuid || localStorage.getItem("id_ponto_turistico"));
+  const isEditing = !!spotUuid;
 
   const {
     categories,
@@ -72,7 +74,7 @@ export default function TouristSpotFormPage() {
     setSpotActive,
     removeSpotPhoto,
     isSaving,
-  } = useTouristSpotController(uuid);
+  } = useTouristSpotController(spotUuid || undefined);
 
   const [form, setForm] = useState<FormState>({
     nome: "",
@@ -95,8 +97,15 @@ export default function TouristSpotFormPage() {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [photoToDelete, setPhotoToDelete] = useState<{ id: number; isSaved: boolean; localId?: number } | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [createdUuid, setCreatedUuid] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+
+  // Sincroniza o UUID da URL com o estado local e localStorage
+  useEffect(() => {
+    if (uuid && uuid !== spotUuid) {
+      setSpotUuid(uuid);
+      localStorage.setItem("id_ponto_turistico", uuid);
+    }
+  }, [uuid, spotUuid]);
 
   // Carregar dados na edição
   useEffect(() => {
@@ -120,14 +129,57 @@ export default function TouristSpotFormPage() {
     }
   }, [isEditing, spot, loaded]);
 
-  const handleFieldChange = (field: keyof FormState, value: any) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+  const cleanBase64 = (b64: string) => b64.includes(',') ? b64.split(',')[1] : b64;
+
+  const saveChanges = async (currentForm: FormState, newCapa?: { base64: string; name: string } | null, newerPhotos?: Array<{ base64: string; name: string }>) => {
+    if (!spotUuid) return;
+
+    const payload: SaveTouristSpotDTO = {
+      id_categoria: currentForm.id_categoria,
+      nome: currentForm.nome,
+      resumo: currentForm.resumo,
+      historia: currentForm.historia,
+      latitude: currentForm.latitude.replace(',', '.'),
+      longitude: currentForm.longitude.replace(',', '.'),
+      cep: currentForm.cep,
+      endereco: currentForm.endereco,
+      numero: currentForm.numero,
+      bairro: currentForm.bairro,
+      cidade: currentForm.cidade,
+      estado: currentForm.uf.toUpperCase(),
+      nome_arquivo_capa: newCapa?.name || "",
+      capa: newCapa ? cleanBase64(newCapa.base64) : "",
+      galeria: (newerPhotos || []).map(p => ({
+        nome_arquivo: p.name,
+        itemFoto: cleanBase64(p.base64)
+      }))
+    };
+
+    try {
+      await updateSpot(payload);
+      if (newCapa) setCapa(null);
+      if (newerPhotos && newerPhotos.length > 0) {
+        setNewPhotos(prev => prev.filter(p => !newerPhotos.some(np => np.base64 === p.base64)));
+      }
+    } catch (error) {
+      console.error("Erro ao salvar alterações automáticas:", error);
+    }
+  };
+
+  const handleFieldChange = async (field: keyof FormState, value: any) => {
+    const updatedForm = { ...form, [field]: value };
+    setForm(updatedForm);
+    
     if (validationErrors[field]) {
       setValidationErrors(prev => {
         const next = { ...prev };
         delete next[field];
         return next;
       });
+    }
+
+    if (spotUuid) {
+      await saveChanges(updatedForm);
     }
   };
 
@@ -140,12 +192,16 @@ export default function TouristSpotFormPage() {
       const base = file.name.replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '_') || 'capa';
       const name = `${base}.jpg`;
       
-      setCapa({ base64: base64String, name });
-      setValidationErrors(prev => {
-        const next = { ...prev };
-        delete next.capa;
-        return next;
-      });
+      if (spotUuid) {
+        await saveChanges(form, { base64: base64String, name });
+      } else {
+        setCapa({ base64: base64String, name });
+        setValidationErrors(prev => {
+          const next = { ...prev };
+          delete next.capa;
+          return next;
+        });
+      }
     } catch (error) {
       console.error('Erro ao processar capa:', error);
       alert('Não foi possível processar essa imagem.');
@@ -170,7 +226,11 @@ export default function TouristSpotFormPage() {
         const base = file.name.replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '_') || 'foto';
         const name = `${base}.jpg`;
         
-        setNewPhotos(prev => [...prev, { localId: Date.now() + i, base64: base64String, name }]);
+        if (spotUuid) {
+          await saveChanges(form, null, [{ base64: base64String, name }]);
+        } else {
+          setNewPhotos(prev => [...prev, { localId: Date.now() + i, base64: base64String, name }]);
+        }
       } catch (error) {
         console.error('Erro ao processar foto:', error);
       }
@@ -190,16 +250,18 @@ export default function TouristSpotFormPage() {
       try {
         const address = await accountService.fetchEndereco(cleanCep);
         if (address) {
-          setForm(prev => ({
-            ...prev,
+          const updatedForm = {
+            ...form,
             cep: cleanCep,
-            endereco: address.street || prev.endereco,
-            bairro: address.neighborhood || prev.bairro,
-            cidade: address.city || prev.cidade,
-            uf: address.state || prev.uf,
-            latitude: address.location?.coordinates.latitude.toString() || prev.latitude,
-            longitude: address.location?.coordinates.longitude.toString() || prev.longitude,
-          }));
+            endereco: address.street || form.endereco,
+            bairro: address.neighborhood || form.bairro,
+            cidade: address.city || form.cidade,
+            uf: address.state || form.uf,
+            latitude: address.location?.coordinates.latitude.toString() || form.latitude,
+            longitude: address.location?.coordinates.longitude.toString() || form.longitude,
+          };
+          
+          setForm(updatedForm);
           
           setValidationErrors(prev => {
             const next = { ...prev };
@@ -212,6 +274,10 @@ export default function TouristSpotFormPage() {
             delete next.longitude;
             return next;
           });
+
+          if (spotUuid) {
+            await saveChanges(updatedForm);
+          }
         }
       } catch (error) {
         console.error("Erro ao buscar CEP:", error);
@@ -219,25 +285,30 @@ export default function TouristSpotFormPage() {
     }
   };
 
-  const handleGetCurrentLocation = () => {
+  const handleGetCurrentLocation = async () => {
     if (!navigator.geolocation) {
       alert("Geolocalização não suportada pelo seu navegador.");
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setForm(prev => ({
-          ...prev,
+      async (position) => {
+        const updatedForm = {
+          ...form,
           latitude: position.coords.latitude.toFixed(6),
           longitude: position.coords.longitude.toFixed(6),
-        }));
+        };
+        setForm(updatedForm);
         setValidationErrors(prev => {
           const next = { ...prev };
           delete next.latitude;
           delete next.longitude;
           return next;
         });
+
+        if (spotUuid) {
+          await saveChanges(updatedForm);
+        }
       },
       () => {
         alert("Não foi possível obter sua localização. Verifique as permissões do navegador.");
@@ -275,8 +346,6 @@ export default function TouristSpotFormPage() {
     return true;
   };
 
-  const cleanBase64 = (b64: string) => b64.includes(',') ? b64.split(',')[1] : b64;
-
   const handleSave = async () => {
     if (!validate()) return;
 
@@ -310,7 +379,8 @@ export default function TouristSpotFormPage() {
         alert("Ponto turístico atualizado com sucesso!");
       } else {
         const result = await createSpot(payload);
-        setCreatedUuid(result.uuid);
+        setSpotUuid(result.uuid);
+        localStorage.setItem("id_ponto_turistico", result.uuid);
         setIsSuccess(true);
       }
     } catch (error: any) {
@@ -642,7 +712,7 @@ export default function TouristSpotFormPage() {
                       <SpotVisibilityToggle 
                         label="Visível no catálogo" 
                         checked={spot?.ativo ?? false}
-                        onChange={(checked) => setSpotActive(uuid, checked)}
+                        onChange={(checked) => spotUuid && setSpotActive(spotUuid, checked)}
                       />
                     </div>
                   </AccordionContent>
@@ -658,7 +728,7 @@ export default function TouristSpotFormPage() {
                     <p className="text-emerald-800 font-bold text-sm">Ponto turístico cadastrado com sucesso!</p>
                   </div>
                   <Button 
-                    onClick={() => navigate(`/vendedor/pontos/${createdUuid}`, { replace: true })}
+                    onClick={() => navigate(`/vendedor/pontos/${spotUuid}`, { replace: true })}
                     className="w-full h-12 gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-lg"
                   >
                     Continuar editando

@@ -99,7 +99,8 @@ export function usePortfolioController() {
         type: 'avatar' | 'bio' | 'gallery' | 'capa',
         fileName: string,
         base64: string,
-        idSite: number
+        idSite: number,
+        idLoja?: string
     ) => {
         let base64ToProcess = base64;
 
@@ -155,13 +156,13 @@ export function usePortfolioController() {
             else await portfolioService.uploadFoto(payload);
 
             // Atualiza os dados em background para obter as URLs finais do servidor sem travar a UI
-            const result = await portfolioService.getPortfolioData();
+            const result = await portfolioService.getPortfolioData(idLoja);
             setData(result);
         } catch (error) {
             console.error(`Erro no upload de ${type}:`, error);
             // Reverte em caso de erro
             try {
-                const result = await portfolioService.getPortfolioData();
+                const result = await portfolioService.getPortfolioData(idLoja);
                 setData(result);
             } catch (reError) {
                 console.error("Erro ao reverter dados:", reError);
@@ -173,8 +174,9 @@ export function usePortfolioController() {
     /**
      * Remove uma foto da galeria do portfólio.
      * @param idFoto ID da foto a ser removida.
+     * @param idLoja Opcional: ID da loja para re-carregamento correto dos dados.
      */
-    const handleDeleteFoto = async (idFoto: number) => {
+    const handleDeleteFoto = async (idFoto: number, idLoja?: string) => {
         // Atualização Otimista
         setData(prev => prev ? {
             ...prev,
@@ -184,12 +186,12 @@ export function usePortfolioController() {
         try {
             await portfolioService.removeFoto(idFoto);
             // Atualiza em background
-            const result = await portfolioService.getPortfolioData();
+            const result = await portfolioService.getPortfolioData(idLoja);
             setData(result);
         } catch (error) {
             console.error("Erro ao deletar foto:", error);
             // Reverte em caso de erro
-            const result = await portfolioService.getPortfolioData();
+            const result = await portfolioService.getPortfolioData(idLoja);
             setData(result);
         }
     };
