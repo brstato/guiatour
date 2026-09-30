@@ -56,3 +56,62 @@ export interface MerchantListResponse {
   page: number;
   pageSize: number;
 }
+
+export interface SpotCategory {
+  id_categoria: number;
+  nome: string;
+  slug: string;
+}
+
+export interface TouristSpotListItem {
+  uuid: string;
+  nome: string;
+  slug: string;
+  categoria: string;
+  ativo: boolean;
+}
+
+export interface TouristSpotGalleryItem {
+  id: number;
+  url: string;
+}
+
+export interface TouristSpot {
+  uuid: string;
+  nome: string;
+  slug: string;
+  resumo: string;
+  historia: string;
+  latitude: number;
+  longitude: number;
+  endereco: string;
+  numero: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
+  cep: string;
+  capa: string;
+  ativo: boolean;
+  id_categoria: number;
+  categoria_nome: string;
+  categoria_slug: string;
+  galeria: TouristSpotGalleryItem[];
+}
+
+export interface SaveTouristSpotDTO {
+  id_categoria: number;
+  nome: string;
+  resumo: string;
+  historia: string;
+  latitude: string;
+  longitude: string;
+  cep: string;
+  endereco: string;
+  numero: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  nome_arquivo_capa: string;
+  capa: string;
+  galeria: Array<{ nome_arquivo: string; itemFoto: string }>;
+}

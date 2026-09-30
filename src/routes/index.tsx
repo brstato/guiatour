@@ -7,6 +7,7 @@ import { LoginPage } from "../features/auth/pages/LoginPage";
 import { VendorRoute } from "../features/vendor/components/VendorRoute";
 import VendorDashboardPage from "../features/vendor/pages/VendorDashboardPage";
 import MerchantCreatePage from "../features/vendor/pages/MerchantCreatePage";
+import TouristSpotFormPage from "../features/vendor/pages/TouristSpotFormPage";
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,14 @@ const router = createBrowserRouter([
       {
         path: "comerciantes/novo",
         element: <MerchantCreatePage />,
+      },
+      {
+        path: "pontos/novo",
+        element: <TouristSpotFormPage />,
+      },
+      {
+        path: "pontos/:uuid",
+        element: <TouristSpotFormPage />,
       },
     ],
   },
