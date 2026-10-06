@@ -61,9 +61,14 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 /**
- * Interceptador de Resposta: Lida com a renovação de tokens em caso de erros 401 ou 403.
- * Implementa a lógica de retry para garantir que o usuário não perca a sessão
- * se o token expirar durante o uso.
+ * Interceptador de Resposta: renova o token quando ele expira (401) e repete a chamada.
+ *
+ * - 401 = token ausente, inválido ou expirado -> tenta o refresh.
+ * - 403 = acesso NEGADO (loja de outro vendedor, rota de administrador...) -> NÃO renova:
+ *   renovar não muda a permissão e, com o id errado, derrubava a sessão.
+ *   Exceção: "Vendedor inativo." encerra a sessão (o vendedor foi desativado).
+ * - O refresh usa o UUID de QUEM ESTÁ LOGADO ("id"). "id_loja" é a loja aberta no painel
+ *   do vendedor e não serve para renovar a sessão dele.
  */
 api.interceptors.response.use(
     (response) => response,
@@ -71,11 +76,20 @@ api.interceptors.response.use(
         const originalRequest = error.config;
 
         // Avoid infinite loop if refresh token call fails
-        if (originalRequest.url === "token/refresh") {
+        if (!originalRequest || originalRequest.url === "token/refresh") {
             return Promise.reject(error);
         }
 
-        if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
+        // 403: acesso negado. Não adianta renovar o token.
+        if (error.response?.status === 403) {
+            if (error.response?.data?.error === "Vendedor inativo.") {
+                localStorage.clear();
+                window.location.href = "/";
+            }
+            return Promise.reject(error);
+        }
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
@@ -91,7 +105,9 @@ api.interceptors.response.use(
             isRefreshing = true;
 
             const rToken = localStorage.getItem("r_token");
-            const userId = localStorage.getItem("id_loja") || localStorage.getItem("id");
+            // UUID de quem está logado (loja ou vendedor). NÃO usar "id_loja" primeiro:
+            // no painel do vendedor ele guarda a loja aberta, não o vendedor.
+            const userId = localStorage.getItem("id") || localStorage.getItem("id_loja");
 
             if (!rToken || !userId) {
                 isRefreshing = false;

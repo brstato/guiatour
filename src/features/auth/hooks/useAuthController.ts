@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import { authService } from '../services/authService';
+import { queryClient } from '@/services/queryClient';
 
 function destinoPosLogin(role: string | undefined, vencida: boolean | undefined, fallback: string): string {
   if (role === 'vendedor') return '/vendedor';
@@ -37,6 +38,8 @@ export function useAuthController() {
     localStorage.removeItem('role');
     localStorage.removeItem('google_refresh_token');
     localStorage.removeItem('login_method');
+    // Dados em cache (lojas, cobrança, administração) não podem sobreviver à troca de usuário.
+    queryClient.clear();
   };
 
   /**
@@ -52,7 +55,8 @@ export function useAuthController() {
       if (!isAtLogin) return;
 
       const rToken = localStorage.getItem('r_token');
-      const userId = localStorage.getItem('id_loja') || localStorage.getItem('id');
+      // UUID de quem está logado; "id_loja" pode ser a loja aberta no painel do vendedor
+      const userId = localStorage.getItem('id') || localStorage.getItem('id_loja');
 
       if (!rToken || !userId) return;
 
@@ -210,6 +214,7 @@ export function useAuthController() {
    */
   const handleLogout = () => {
     clearPersistentTokens();
+    queryClient.clear();
     navigate('/');
   };
 

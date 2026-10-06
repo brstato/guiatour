@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
-import { Plus, Search, Loader2, MapPin, CreditCard } from "lucide-react";
+import { Plus, Search, Loader2, MapPin, CreditCard, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useVendorController } from "../hooks/useVendorController";
 import { useTouristSpotController } from "../hooks/useTouristSpotController";
+import { useAdminAcesso } from "@/features/admin/hooks/useAdminAcesso";
 import { VendorHeader } from "../components/VendorHeader";
 import { useNavigate } from "react-router-dom";
 
@@ -18,6 +19,9 @@ export default function VendorDashboardPage() {
     spots,
     isLoadingSpots,
   } = useTouristSpotController();
+
+  const { data: perfilData } = useAdminAcesso();
+  const isAdm = perfilData?.adm === true;
 
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -72,6 +76,16 @@ export default function VendorDashboardPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
+              {isAdm && (
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate('/vendedor/admin')}
+                  className="gap-2 text-purple-600 border-purple-200 hover:bg-purple-50 font-bold h-11 px-6 shadow-sm"
+                >
+                  <Shield className="h-4.5 w-4.5" />
+                  Administração
+                </Button>
+              )}
               <Button 
                 variant="outline"
                 onClick={() => {

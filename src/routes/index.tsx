@@ -9,6 +9,7 @@ import VendorDashboardPage from "../features/vendor/pages/VendorDashboardPage";
 import MerchantCreatePage from "../features/vendor/pages/MerchantCreatePage";
 import TouristSpotFormPage from "../features/vendor/pages/TouristSpotFormPage";
 import VendorBillingPage from "../features/vendor/pages/VendorBillingPage";
+import { AdminPage } from "../features/admin/pages/AdminPage";
 import { BillingPage } from "../features/billing/pages/BillingPage";
 
 const router = createBrowserRouter([
@@ -33,11 +34,11 @@ const router = createBrowserRouter([
         element: <VendorBillingPage />,
       },
       {
-        path: "pontos/novo",
-        element: <TouristSpotFormPage />,
+        path: "admin",
+        element: <AdminPage />,
       },
       {
-        path: "pontos/:uuid",
+        path: "pontos/novo",
         element: <TouristSpotFormPage />,
       },
     ],

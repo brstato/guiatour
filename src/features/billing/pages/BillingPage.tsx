@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { Loader2, AlertCircle, ExternalLink, MessageCircle, Copy, Check, RefreshCcw } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,12 @@ export function BillingPage() {
   const { id, uuid } = useParams<{ id?: string; uuid?: string }>();
   const isVendor = localStorage.getItem("role")?.trim().toLowerCase() === "vendedor";
   const lojaId = isVendor ? (uuid ?? (id && id !== "me" ? id : undefined)) : undefined;
+
+  // Administrador abrindo loja de OUTRO vendedor (vem da tela de administração): pode gerar
+  // cobrança, mas cancelar ou trocar plano é só do dono (o servidor responde 403).
+  const location = useLocation();
+  const somenteCobranca =
+    (location.state as { somenteCobranca?: boolean } | null)?.somenteCobranca === true;
 
   const { plans, status, checkout, cancel } = useBilling(lojaId);
 
@@ -356,6 +362,11 @@ export function BillingPage() {
           )}
 
           {/* Ações de assinatura */}
+          {somenteCobranca ? (
+            <p className="pt-2 text-center text-sm text-slate-500">
+              Cancelar ou trocar o plano fica com o vendedor responsável por esta loja.
+            </p>
+          ) : (
           <div className="pt-2">
             {data.status === "PENDENTE" && (
               <Button
@@ -409,7 +420,14 @@ export function BillingPage() {
                 )}
               </div>
             )}
+
+            {cancel.isError && (
+              <p className="mt-3 text-center text-sm text-red-600">
+                {errorMessage(cancel.error, "Não foi possível concluir. Tente novamente.")}
+              </p>
+            )}
           </div>
+          )}
         </>
       )}
     </div>
