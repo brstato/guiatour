@@ -146,7 +146,7 @@ export function usePortfolioController() {
         try {
             // Remove o prefixo "data:image/...;base64," antes de enviar para a API
             const base64Data = base64ToProcess.includes(',') ? base64ToProcess.split(',')[1] : base64ToProcess;
-            const payload = { nome_arquivo: fileName, imagem_base64: base64Data, id_site: idSite };
+            const payload = { nome_arquivo: fileName, imagem_base64: base64Data, id_site: idSite, id_loja: idLoja };
 
             console.log(`Iniciando upload de ${type} para id_site: ${idSite}`);
 

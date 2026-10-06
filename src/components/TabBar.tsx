@@ -1,9 +1,10 @@
 import { NavLink } from "react-router-dom";
-import { Pencil, BarChart3 } from "lucide-react";
+import { Pencil, BarChart3, CreditCard } from "lucide-react";
 
 const tabs = [
     { to: "editar", label: "Editar", icon: Pencil },
     { to: "metricas", label: "Métricas", icon: BarChart3 },
+    { to: "assinatura", label: "Assinatura", icon: CreditCard },
 ];
 
 export function TabBar() {

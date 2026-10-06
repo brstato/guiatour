@@ -31,7 +31,6 @@ import {
 import { VendorHeader } from "../components/VendorHeader";
 import { SpotEditableField } from "../components/spot/SpotEditableField";
 import { SpotEditableSelect } from "../components/spot/SpotEditableSelect";
-import { SpotProgressRing } from "../components/spot/SpotProgressRing";
 import { SpotSectionStatusIcon } from "../components/spot/SpotSectionStatusIcon";
 import { SpotVisibilityToggle } from "../components/spot/SpotVisibilityToggle";
 import { useTouristSpotController } from "../hooks/useTouristSpotController";
@@ -482,17 +481,6 @@ export default function TouristSpotFormPage() {
                 <Camera className="h-5 w-5" />
                 <input type="file" className="hidden" accept="image/*" onChange={handleCapaChange} />
               </label>
-
-              <div className="relative z-10 shrink-0">
-                <div className="absolute inset-[5px] rounded-full overflow-hidden flex items-center justify-center bg-blue-50 border-2 border-white shadow-sm">
-                  {form.nome ? (
-                    <span className="text-[#2563eb] text-3xl font-bold">{form.nome.charAt(0).toUpperCase()}</span>
-                  ) : (
-                    <MapPin className="h-8 w-8 text-[#2563eb]" />
-                  )}
-                </div>
-                <SpotProgressRing progress={progressPercent} size={130} strokeWidth={3} />
-              </div>
 
               <div className="relative z-10 flex-1 py-2">
                 <SpotEditableField

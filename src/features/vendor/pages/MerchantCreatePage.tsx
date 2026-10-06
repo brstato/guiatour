@@ -460,38 +460,38 @@ export default function MerchantCreatePage() {
       if (merchantUuid) {
         const idSite = localPortfolio?.id_site || 0;
         await uploadFile(type, sanitizedName, base64String, idSite, merchantUuid);
-      } else {
-        // Armazena localmente para o payload final apenas se não foi criado ainda
-        if (type === 'gallery') {
-          setLocalImages(prev => {
-            const newGallery = [...prev.gallery, { base64: base64String, name: sanitizedName, id: Date.now() }];
-            if (newGallery.length >= 4) {
-              setValidationErrors(v => {
-                const n = { ...v };
-                delete n.trabalhos;
-                return n;
-              });
-            }
-            return {
-              ...prev,
-              gallery: newGallery
-            };
-          });
-        } else {
-          setLocalImages(prev => {
+      }
+      
+      // Atualiza o estado local para refletir a nova imagem instantaneamente
+      if (type === 'gallery') {
+        setLocalImages(prev => {
+          const newGallery = [...prev.gallery, { base64: base64String, name: sanitizedName, id: Date.now() }];
+          if (newGallery.length >= 4) {
             setValidationErrors(v => {
               const n = { ...v };
-              if (type === 'avatar') delete n.avatar;
-              if (type === 'capa') delete n.capa;
-              if (type === 'bio') delete n.foto_bio;
+              delete n.trabalhos;
               return n;
             });
-            return {
-              ...prev,
-              [type]: { base64: base64String, name: sanitizedName }
-            };
+          }
+          return {
+            ...prev,
+            gallery: newGallery
+          };
+        });
+      } else {
+        setLocalImages(prev => {
+          setValidationErrors(v => {
+            const n = { ...v };
+            if (type === 'avatar') delete n.avatar;
+            if (type === 'capa') delete n.capa;
+            if (type === 'bio') delete n.foto_bio;
+            return n;
           });
-        }
+          return {
+            ...prev,
+            [type]: { base64: base64String, name: sanitizedName }
+          };
+        });
       }
     } catch (error: any) {
       console.error('Erro ao processar imagem:', error);

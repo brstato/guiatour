@@ -106,6 +106,7 @@ class AuthService {
           token: response.data.token,
           rToken: response.data.r_token,
           role: response.data.tipo || response.data.message?.tipo,
+          vencida: response.data.vencida === true,
         };
       }
       return { success: false, statusCode: response.status, token: '', rToken: '' };
@@ -161,6 +162,7 @@ class AuthService {
         userId: String(response.data.message?.id || ''),
         idLoja: String(response.data.id_loja || ''),
         role: response.data.tipo || response.data.message?.tipo,
+        vencida: response.data.vencida === true,
         errorMessage: '',
       };
     }

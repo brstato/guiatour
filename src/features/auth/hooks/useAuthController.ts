@@ -3,6 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import { authService } from '../services/authService';
 
+function destinoPosLogin(role: string | undefined, vencida: boolean | undefined, fallback: string): string {
+  if (role === 'vendedor') return '/vendedor';
+  if (vencida) return '/loja/me/assinatura';
+  return fallback;
+}
+
 /**
  * Hook customizado que atua como Controller para a funcionalidade de Autenticação.
  * Centraliza a lógica de login (E-mail/Senha e Google), recuperação de senha,
@@ -61,13 +67,9 @@ export function useAuthController() {
           const role = result.role?.trim().toLowerCase();
           if (role) localStorage.setItem('role', role);
           
-          console.log("Auto-login detected role:", role);
+          console.log("Auto-login detected role:", role, "vencida:", result.vencida);
           
-          if (role === 'vendedor') {
-            navigate('/vendedor');
-          } else {
-            navigate('/portfolio');
-          }
+          navigate(destinoPosLogin(role, result.vencida, '/portfolio'));
         } else {
           if (result.statusCode === 401) {
             clearPersistentTokens();
@@ -107,13 +109,9 @@ export function useAuthController() {
         const role = result.role?.trim().toLowerCase();
         if (role) localStorage.setItem('role', role);
         
-        console.log("Login detected role:", role);
+        console.log("Login detected role:", role, "vencida:", result.vencida);
 
-        if (role === 'vendedor') {
-          navigate('/vendedor');
-        } else {
-          navigate('/dashboard');
-        }
+        navigate(destinoPosLogin(role, result.vencida, '/dashboard'));
       } else {
         const errorTitles: Record<number, string> = {
           401: 'Acesso Negado',
@@ -187,13 +185,9 @@ export function useAuthController() {
           const role = result.role?.trim().toLowerCase();
           if (role) localStorage.setItem('role', role);
           
-          console.log("Google login detected role:", role);
+          console.log("Google login detected role:", role, "vencida:", result.vencida);
           
-          if (role === 'vendedor') {
-            navigate('/vendedor');
-          } else {
-            navigate('/dashboard');
-          }
+          navigate(destinoPosLogin(role, result.vencida, '/dashboard'));
         } else {
           setError({ title: 'Erro de Autenticação', message: `Falha ao autenticar com Google no servidor.` });
         }
@@ -231,4 +225,3 @@ export function useAuthController() {
     handleLogout,
   };
 }
-

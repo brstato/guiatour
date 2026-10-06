@@ -11,6 +11,7 @@ export interface LoginResult {
     userId: string;
     idLoja: string;
     role?: 'vendedor' | 'comerciante';
+    vencida?: boolean;
     errorMessage: string;
 }
 
@@ -20,6 +21,7 @@ export interface RefreshResult {
     token: string;
     rToken: string;
     role?: 'vendedor' | 'comerciante';
+    vencida?: boolean;
 }
 
 export interface RecoveryResult {

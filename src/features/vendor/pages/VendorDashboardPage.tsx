@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Plus, Search, Loader2, MapPin } from "lucide-react";
+import { Plus, Search, Loader2, MapPin, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -124,13 +124,23 @@ export default function VendorDashboardPage() {
                         <h3 className="font-bold text-slate-900 truncate">{item.nome}</h3>
                         <p className="text-sm text-slate-500 truncate">/{item.slug}</p>
                       </div>
-                      <Button 
-                        variant="outline"
-                        onClick={() => handleVisualizar(item.uuid)}
-                        className="ml-4 bg-white text-blue-600 border-blue-100 hover:bg-blue-50 hover:border-blue-200 font-bold shrink-0 shadow-sm"
-                      >
-                        Visualizar
-                      </Button>
+                      <div className="flex shrink-0 items-center gap-2 ml-4">
+                        <Button 
+                          variant="outline"
+                          onClick={() => navigate(`/vendedor/comerciantes/${item.uuid}/assinatura`)}
+                          className="bg-white text-slate-700 border-slate-200 hover:bg-slate-50 font-bold shrink-0 shadow-sm gap-1.5"
+                        >
+                          <CreditCard className="w-4 h-4 text-slate-500" />
+                          <span className="hidden sm:inline">Cobrança</span>
+                        </Button>
+                        <Button 
+                          variant="outline"
+                          onClick={() => handleVisualizar(item.uuid)}
+                          className="bg-white text-blue-600 border-blue-100 hover:bg-blue-50 hover:border-blue-200 font-bold shrink-0 shadow-sm"
+                        >
+                          Visualizar
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>

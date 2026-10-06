@@ -82,7 +82,7 @@ class PortfolioService {
      * Realiza o upload de uma foto genérica para a galeria do portfólio.
      * @param payload Dados da imagem em base64 e metadados.
      */
-    async uploadFoto(payload: { nome_arquivo: string; imagem_base64: string; id_site: number }): Promise<any> {
+    async uploadFoto(payload: { nome_arquivo: string; imagem_base64: string; id_site: number; id_loja?: string }): Promise<any> {
         const response = await api.post('portfolio/upload', payload);
         return response.data;
     }
@@ -91,7 +91,7 @@ class PortfolioService {
      * Realiza o upload da foto de perfil (avatar).
      * @param payload Dados da imagem em base64 e metadados.
      */
-    async uploadAvatar(payload: { nome_arquivo: string; imagem_base64: string; id_site: number }): Promise<any> {
+    async uploadAvatar(payload: { nome_arquivo: string; imagem_base64: string; id_site: number; id_loja?: string }): Promise<any> {
         const response = await api.post('portfolio/avatar', payload);
         return response.data;
     }
@@ -100,7 +100,7 @@ class PortfolioService {
      * Realiza o upload da foto de biografia.
      * @param payload Dados da imagem em base64 e metadados.
      */
-    async uploadBioFoto(payload: { nome_arquivo: string; imagem_base64: string; id_site: number }): Promise<any> {
+    async uploadBioFoto(payload: { nome_arquivo: string; imagem_base64: string; id_site: number; id_loja?: string }): Promise<any> {
         const response = await api.post('portfolio/foto-bio', payload);
         return response.data;
     }
@@ -109,7 +109,7 @@ class PortfolioService {
      * Realiza o upload da foto de capa do portfólio.
      * @param payload Dados da imagem em base64 e metadados.
      */
-    async uploadFotoCapa(payload: { nome_arquivo: string; imagem_base64: string; id_site: number }): Promise<any> {
+    async uploadFotoCapa(payload: { nome_arquivo: string; imagem_base64: string; id_site: number; id_loja?: string }): Promise<any> {
         const response = await api.post('portfolio/foto-capa', payload);
         return response.data;
     }

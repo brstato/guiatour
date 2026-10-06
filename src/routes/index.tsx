@@ -8,6 +8,8 @@ import { VendorRoute } from "../features/vendor/components/VendorRoute";
 import VendorDashboardPage from "../features/vendor/pages/VendorDashboardPage";
 import MerchantCreatePage from "../features/vendor/pages/MerchantCreatePage";
 import TouristSpotFormPage from "../features/vendor/pages/TouristSpotFormPage";
+import VendorBillingPage from "../features/vendor/pages/VendorBillingPage";
+import { BillingPage } from "../features/billing/pages/BillingPage";
 
 const router = createBrowserRouter([
   {
@@ -25,6 +27,10 @@ const router = createBrowserRouter([
       {
         path: "comerciantes/novo",
         element: <MerchantCreatePage />,
+      },
+      {
+        path: "comerciantes/:uuid/assinatura",
+        element: <VendorBillingPage />,
       },
       {
         path: "pontos/novo",
@@ -54,6 +60,10 @@ const router = createBrowserRouter([
           {
             path: "metricas",
             element: <MetricasPage />,
+          },
+          {
+            path: "assinatura",
+            element: <BillingPage />,
           },
         ],
       },
