@@ -37,14 +37,6 @@ class PortfolioService {
         return response.data;
     }
 
-    /**
-     * Obtém a galeria de fotos de um portfólio específico.
-     * @param idPortfolio ID do portfólio.
-     */
-    async getGaleria(idPortfolio: number): Promise<any> {
-        const response = await api.get(`portfolio/galeria/${idPortfolio}`);
-        return response.data;
-    }
 
     /**
      * Realiza o upload de uma foto genérica para a galeria do portfólio.
