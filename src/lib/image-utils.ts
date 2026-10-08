@@ -1,4 +1,3 @@
-import heic2any from 'heic2any';
 
 /**
  * Converte arquivos HEIC (iOS) para JPEG e comprime imagens via Canvas.
@@ -24,6 +23,8 @@ export async function processAndCompressImage(
     // 2. Converte para JPEG caso seja HEIC
     if (isHeic) {
         try {
+            // carregada só aqui: a biblioteca tem ~1,3 MB e só serve para fotos HEIC do iPhone
+            const { default: heic2any } = await import('heic2any');
             const converted = await heic2any({
                 blob: file,
                 toType: 'image/jpeg',

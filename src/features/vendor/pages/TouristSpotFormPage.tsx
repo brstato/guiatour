@@ -127,10 +127,16 @@ export default function TouristSpotFormPage() {
         longitude: spot.longitude?.toString() || "",
         url_video: spot.url_video || "",
       });
-      setSavedPhotos(spot.galeria || []);
       setLoaded(true);
     }
   }, [isEditing, spot, loaded]);
+
+  // A galeria salva sempre acompanha o servidor (depois de enviar ou apagar foto)
+  useEffect(() => {
+    if (isEditing && spot) {
+      setSavedPhotos(spot.galeria || []);
+    }
+  }, [isEditing, spot]);
 
   const cleanBase64 = (b64: string) => b64.includes(',') ? b64.split(',')[1] : b64;
 
@@ -400,6 +406,9 @@ export default function TouristSpotFormPage() {
         alert("Ponto turístico atualizado com sucesso!");
       } else {
         const result = await createSpot(payload);
+        // as fotos já estão no servidor e voltam em spot.galeria
+        setCapa(null);
+        setNewPhotos([]);
         setSpotUuid(result.uuid);
         localStorage.setItem("id_ponto_turistico", result.uuid);
         setIsSuccess(true);

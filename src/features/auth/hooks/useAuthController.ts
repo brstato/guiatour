@@ -173,21 +173,21 @@ export function useAuthController() {
     onSuccess: async (codeResponse) => {
       setIsLoading(true);
       try {
-        const rToken = localStorage.getItem('r_token');
         const result = await authService.loginGoogleCode({
-          g_code: codeResponse.code,
-          r_token: rToken || undefined
+          g_code: codeResponse.code
         });
 
         if (result.success) {
           localStorage.setItem('token', result.token);
           localStorage.setItem('r_token', result.rToken);
           localStorage.setItem('id', result.userId);
-          localStorage.setItem('id_loja', result.idLoja);
           localStorage.setItem('login_method', 'google');
           
           const role = result.role?.trim().toLowerCase();
           if (role) localStorage.setItem('role', role);
+          // vendedor: "id_loja" é a loja aberta no painel, não quem fez login
+          if (role === 'vendedor') localStorage.removeItem('id_loja');
+          else localStorage.setItem('id_loja', result.idLoja);
           
           console.log("Google login detected role:", role, "vencida:", result.vencida);
           

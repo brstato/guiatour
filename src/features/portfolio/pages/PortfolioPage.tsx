@@ -581,7 +581,7 @@ export function PortfolioPage() {
                         <EditableField
                             label="Apelido"
                             value={account?.slug}
-                            maxLength={100}
+                            maxLength={60}
                             isSlug
                             error={slugError}
                             onSave={async (val) => {

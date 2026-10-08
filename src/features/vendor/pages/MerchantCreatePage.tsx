@@ -455,10 +455,14 @@ export default function MerchantCreatePage() {
   }, [accountData]);
 
   useEffect(() => {
-    if (portfolioData && !localPortfolio) {
-      setLocalPortfolio(portfolioData);
-    }
-  }, [portfolioData, localPortfolio]);
+    if (!portfolioData) return;
+    setLocalPortfolio(prev => {
+      if (!prev) return portfolioData;
+      // comércio existente: as fotos da galeria vêm sempre do servidor (com o id real)
+      if (merchantUuid) return { ...prev, itens: portfolioData.itens || [] };
+      return prev;
+    });
+  }, [portfolioData, merchantUuid]);
 
   // Previews combinando dados do servidor e locais
   const displayImages = useMemo(() => {
@@ -491,6 +495,8 @@ export default function MerchantCreatePage() {
       
       // Atualiza o estado local para refletir a nova imagem instantaneamente
       if (type === 'gallery') {
+        // comércio existente: a foto já foi enviada e volta do servidor com o id real
+        if (merchantUuid) return;
         setLocalImages(prev => {
           const newGallery = [...prev.gallery, { base64: base64String, name: sanitizedName, id: Date.now() }];
           if (newGallery.length >= 4) {
@@ -629,6 +635,8 @@ export default function MerchantCreatePage() {
           localStorage.setItem("id_loja", uuid);
         }
         setCreatedSlug(localAccount.slug);
+        // a galeria agora vem do servidor (sem fotos em dobro e sem apagar só na tela)
+        setLocalImages(prev => ({ ...prev, gallery: [] }));
         setIsCreated(true);
       }
     } catch (error: any) {
@@ -805,7 +813,7 @@ export default function MerchantCreatePage() {
                 <EditableField
                   label="Apelido"
                   value={localAccount?.slug}
-                  maxLength={100}
+                  maxLength={60}
                   isSlug
                   error={validationErrors.slug}
                   onSave={async (val) => {

@@ -76,7 +76,9 @@ api.interceptors.response.use(
         const originalRequest = error.config;
 
         // Avoid infinite loop if refresh token call fails
-        if (!originalRequest || originalRequest.url === "token/refresh") {
+        // token/refresh e login não passam pela renovação: o erro tem que chegar à tela
+        const semRenovacao = ["token/refresh", "login_google", "login"];
+        if (!originalRequest || semRenovacao.includes(originalRequest.url)) {
             return Promise.reject(error);
         }
 
@@ -102,6 +104,15 @@ api.interceptors.response.use(
             }
 
             originalRequest._retry = true;
+
+            // Outra aba já renovou a sessão: usa o token novo, sem gastar o refresh
+            const tokenSalvo = localStorage.getItem("token");
+            const tokenUsado = String(originalRequest.headers?.Authorization || "").replace("Bearer ", "");
+            if (tokenSalvo && tokenSalvo !== tokenUsado) {
+                originalRequest.headers.Authorization = `Bearer ${tokenSalvo}`;
+                return api(originalRequest);
+            }
+
             isRefreshing = true;
 
             const rToken = localStorage.getItem("r_token");
@@ -127,15 +138,28 @@ api.interceptors.response.use(
                 localStorage.setItem("token", token);
                 localStorage.setItem("r_token", newRToken);
 
-                api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
                 originalRequest.headers.Authorization = `Bearer ${token}`;
 
                 processQueue(null, token);
                 return api(originalRequest);
-            } catch (refreshError) {
+            } catch (refreshError: any) {
+                // Outra aba renovou ao mesmo tempo (o r_token salvo mudou): segue com o token novo
+                const rTokenAgora = localStorage.getItem("r_token");
+                const tokenAgora = localStorage.getItem("token");
+                if (rTokenAgora && rTokenAgora !== rToken && tokenAgora) {
+                    processQueue(null, tokenAgora);
+                    originalRequest.headers.Authorization = `Bearer ${tokenAgora}`;
+                    return api(originalRequest);
+                }
+
                 processQueue(refreshError, null);
-                localStorage.clear();
-                window.location.href = "/";
+                // Só encerra a sessão quando o servidor recusou o refresh.
+                // Falha de rede ou timeout (sem resposta) não desloga.
+                const status = refreshError?.response?.status;
+                if (status === 400 || status === 401 || status === 403) {
+                    localStorage.clear();
+                    window.location.href = "/";
+                }
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;
