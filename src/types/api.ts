@@ -104,6 +104,7 @@ export interface PortfolioData {
     avatar: string;
     foto_bio: string;
     foto_capa?: string;
+    url_video?: string;
     itens: Array<{
         id_foto: number;
         url_foto: string;

@@ -45,34 +45,23 @@ export function usePortfolioController() {
     }, []);
 
     /**
-     * Lida com a atualização genérica de campos do portfólio.
-     * Implementa atualização otimista para uma UI mais fluida.
-     * @param payload Campos a serem atualizados.
-     */
-    const handleUpdate = async (payload: Partial<PortfolioData>) => {
-        setData(prev => prev ? { ...prev, ...payload } : null);
-        try {
-            await portfolioService.updatePortfolio(payload);
-        } catch (error) {
-            console.error("Erro ao atualizar portfólio:", error);
-            await loadData();
-        }
-    };
-
-    /**
      * Lida com a atualização dos campos básicos (título, subtítulo, bio).
      * @param updateData Dados parciais de texto e id_loja opcional.
      */
-    const handleUpdateBasico = async (updateData: { titulo?: string; subtitulo?: string; bio?: string; id_loja?: string }) => {
+    const handleUpdateBasico = async (
+        updateData: { titulo?: string; subtitulo?: string; bio?: string; url_video?: string; id_loja?: string }
+    ): Promise<{ success: boolean; error?: string }> => {
         const mergedData = data ? {
             ...data,
             titulo: updateData.titulo ?? data.titulo ?? "",
             subtitulo: updateData.subtitulo ?? data.subtitulo ?? "",
             bio: updateData.bio ?? data.bio ?? "",
+            ...(updateData.url_video !== undefined && { url_video: updateData.url_video }),
         } : {
             titulo: updateData.titulo ?? "",
             subtitulo: updateData.subtitulo ?? "",
             bio: updateData.bio ?? "",
+            url_video: updateData.url_video ?? "",
         };
 
         setData(mergedData as PortfolioData);
@@ -81,9 +70,13 @@ export function usePortfolioController() {
                 ...updateData,
                 id_loja: updateData.id_loja
             });
+            return { success: true };
         } catch (error) {
             console.error("Erro ao atualizar portfólio básico:", error);
             await loadData(updateData.id_loja);
+            // 400 traz a mensagem do backend (ex.: "URL de vídeo inválida..."); 500 traz "Erro interno."
+            const msg = axios.isAxiosError(error) ? error.response?.data?.error : undefined;
+            return { success: false, error: typeof msg === "string" && msg ? msg : "Não foi possível salvar. Tente de novo." };
         }
     };
 
@@ -233,7 +226,6 @@ export function usePortfolioController() {
         depoimentos,
         loadData,
         loadDepoimentos,
-        handleUpdate,
         handleUpdateBasico,
         handleUpload,
         handleDeleteFoto,

@@ -37,6 +37,7 @@ import { useTouristSpotController } from "../hooks/useTouristSpotController";
 import { accountService } from "@/features/settings/services/accountService";
 import { processAndCompressImage, getImageUrl } from "@/lib/image-utils";
 import { cn } from "@/lib/utils";
+import { VideoUrlField } from "@/components/VideoUrlField";
 import type { SaveTouristSpotDTO } from "../types";
 
 const MIN_GALLERY_PHOTOS = 3;
@@ -55,6 +56,7 @@ interface FormState {
   uf: string;
   latitude: string;
   longitude: string;
+  url_video: string;
 }
 
 export default function TouristSpotFormPage() {
@@ -88,6 +90,7 @@ export default function TouristSpotFormPage() {
     uf: "",
     latitude: "",
     longitude: "",
+    url_video: "",
   });
 
   const [capa, setCapa] = useState<{ base64: string; name: string } | null>(null);
@@ -122,6 +125,7 @@ export default function TouristSpotFormPage() {
         uf: spot.uf || "",
         latitude: spot.latitude?.toString() || "",
         longitude: spot.longitude?.toString() || "",
+        url_video: spot.url_video || "",
       });
       setSavedPhotos(spot.galeria || []);
       setLoaded(true);
@@ -130,8 +134,11 @@ export default function TouristSpotFormPage() {
 
   const cleanBase64 = (b64: string) => b64.includes(',') ? b64.split(',')[1] : b64;
 
-  const saveChanges = async (currentForm: FormState, newCapa?: { base64: string; name: string } | null, newerPhotos?: Array<{ base64: string; name: string }>) => {
-    if (!spotUuid) return;
+  // incluirVideo: o vídeo só vai no PUT quando ele é a alteração.
+  // Sem o campo, o backend mantém o vídeo que já está salvo.
+  // Devolve a mensagem de erro do backend, ou null se salvou.
+  const saveChanges = async (currentForm: FormState, newCapa?: { base64: string; name: string } | null, newerPhotos?: Array<{ base64: string; name: string }>, incluirVideo = false): Promise<string | null> => {
+    if (!spotUuid) return null;
 
     const payload: SaveTouristSpotDTO = {
       id_categoria: currentForm.id_categoria,
@@ -151,7 +158,8 @@ export default function TouristSpotFormPage() {
       galeria: (newerPhotos || []).map(p => ({
         nome_arquivo: p.name,
         itemFoto: cleanBase64(p.base64)
-      }))
+      })),
+      ...(incluirVideo && { url_video: currentForm.url_video })
     };
 
     try {
@@ -160,8 +168,10 @@ export default function TouristSpotFormPage() {
       if (newerPhotos && newerPhotos.length > 0) {
         setNewPhotos(prev => prev.filter(p => !newerPhotos.some(np => np.base64 === p.base64)));
       }
-    } catch (error) {
+      return null;
+    } catch (error: any) {
       console.error("Erro ao salvar alterações automáticas:", error);
+      return error?.response?.data?.error || "Não foi possível salvar. Tente de novo.";
     }
   };
 
@@ -180,6 +190,16 @@ export default function TouristSpotFormPage() {
     if (spotUuid) {
       await saveChanges(updatedForm);
     }
+  };
+
+  const handleVideoSave = async (url: string): Promise<string | null> => {
+    const updatedForm = { ...form, url_video: url };
+    if (spotUuid) {
+      const erro = await saveChanges(updatedForm, null, [], true);
+      if (erro) return erro;
+    }
+    setForm(updatedForm);
+    return null;
   };
 
   const handleCapaChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -366,7 +386,9 @@ export default function TouristSpotFormPage() {
       galeria: newPhotos.map(p => ({
         nome_arquivo: p.name,
         itemFoto: cleanBase64(p.base64)
-      }))
+      })),
+      // na edição, só envia o vídeo se o GET já trouxe o campo (tarefa B1); senão apagaria o vídeo salvo
+      ...((!isEditing || spot?.url_video !== undefined) && { url_video: form.url_video })
     };
 
     try {
@@ -536,6 +558,10 @@ export default function TouristSpotFormPage() {
                       multiline 
                       placeholder="Texto completo com detalhes sobre o local"
                       onSave={(val) => handleFieldChange("historia", val)}
+                    />
+                    <VideoUrlField
+                      value={form.url_video}
+                      onSave={handleVideoSave}
                     />
                   </div>
                 </AccordionContent>

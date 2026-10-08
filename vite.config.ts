@@ -20,6 +20,6 @@ export default defineConfig({
     allowedHosts: ["pages.guiatour.online", "dev-pages.guiatour.online"], // Permite acessar via este domínio
   },
   build: {
-    sourcemap: true,
+    sourcemap: false, // não publica o código-fonte original (.map) junto com o site
   },
 });

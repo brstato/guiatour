@@ -23,6 +23,7 @@ import { useVendorController } from "@/features/vendor/hooks/useVendorController
 import { processAndCompressImage, getImageUrl } from "@/lib/image-utils";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { VideoUrlField } from "@/components/VideoUrlField";
 import {
   Accordion,
   AccordionContent,
@@ -362,6 +363,19 @@ function EditableSelect({
   );
 }
 
+// Comércio novo: ainda não existe loja no backend, então o formulário começa vazio.
+// latitude/longitude ficam de fora de propósito: entram pelo CEP ou digitadas.
+const CONTA_VAZIA = {
+  nome: "", telefone: "", email: "", slug: "", cep: "", endereco: "", bairro: "",
+  cidade: "", estado: "", numero: "", complemento: "", insta: "", meta_pixel: "",
+  g_analytcs: "", google_ads_nome: "", conta_google_ads: "", horario: {},
+} as AccountData;
+
+const PORTFOLIO_VAZIO: PortfolioData = {
+  id_site: 0, titulo: "", subtitulo: "", bio: "", avatar: "", foto_bio: "",
+  foto_capa: "", url_video: "", itens: [],
+};
+
 export default function MerchantCreatePage() {
   const navigate = useNavigate();
   const { createMerchant, isCreating } = useVendorController();
@@ -375,7 +389,8 @@ export default function MerchantCreatePage() {
     handleUpdateContato: updateAccountContato,
     handleUpdateEndereco: updateAccountEndereco,
     handleUpdateConfiguracoesAvancadas: updateAccountConfiguracoesAvancadas,
-    validateSlug
+    validateSlug,
+    loadCategorias
   } = useAccountController();
 
   const {
@@ -394,8 +409,13 @@ export default function MerchantCreatePage() {
   const [merchantUuid, setMerchantUuid] = useState<string | null>(() => localStorage.getItem("id_loja"));
 
   // Estado local para evitar updates incrementais no backend
-  const [localAccount, setLocalAccount] = useState<AccountData | null>(null);
-  const [localPortfolio, setLocalPortfolio] = useState<PortfolioData | null>(null);
+  // comércio novo (sem id_loja) já começa com o formulário vazio; edição espera os dados do backend
+  const [localAccount, setLocalAccount] = useState<AccountData | null>(
+    () => (localStorage.getItem("id_loja") ? null : { ...CONTA_VAZIA })
+  );
+  const [localPortfolio, setLocalPortfolio] = useState<PortfolioData | null>(
+    () => (localStorage.getItem("id_loja") ? null : { ...PORTFOLIO_VAZIO, itens: [] })
+  );
 
   // Estado local para armazenar as imagens em base64 para o payload final
   const [localImages, setLocalImages] = useState<{
@@ -408,9 +428,16 @@ export default function MerchantCreatePage() {
   });
 
   useEffect(() => {
-    loadAccount(merchantUuid || undefined);
-    loadPortfolio(merchantUuid || undefined);
-  }, [loadAccount, loadPortfolio, merchantUuid]);
+    if (merchantUuid) {
+      // editando um comércio que já existe
+      loadAccount(merchantUuid);
+      loadPortfolio(merchantUuid);
+    } else {
+      // comércio novo: o backend exige id_loja do vendedor em get_data/info, então
+      // não há o que buscar. Carrega só as categorias.
+      loadCategorias();
+    }
+  }, [loadAccount, loadPortfolio, loadCategorias, merchantUuid]);
 
   // Sincroniza dados iniciais e atualiza latitude/longitude se vierem do backend
   useEffect(() => {
@@ -532,6 +559,13 @@ export default function MerchantCreatePage() {
     if (!localAccount.bairro?.trim()) newErrors.bairro = "Bairro é obrigatório";
     if (!localAccount.cidade?.trim()) newErrors.cidade = "Cidade é obrigatória";
     if (!localAccount.estado?.trim()) newErrors.estado = "Estado é obrigatório";
+    // sem coordenadas o comércio não aparece perto dos pontos turísticos (e o backend recusa vazio)
+    const lat = Number(localAccount.latitude);
+    const lng = Number(localAccount.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) {
+      newErrors.latitude = "Informe a latitude (preencha o CEP ou digite)";
+      newErrors.longitude = "Informe a longitude (preencha o CEP ou digite)";
+    }
 
     // Trabalhos
     if (displayImages.gallery.length < 4) {
@@ -570,6 +604,7 @@ export default function MerchantCreatePage() {
       titulo: localPortfolio.titulo || '',
       subtitulo: localPortfolio.subtitulo || '',
       bio: localPortfolio.bio || '',
+      url_video: localPortfolio.url_video || '',
       nome_arquivo_foto_avatar: localImages.avatar?.name || '',
       nome_arquivo_foto_bio: localImages.bio?.name || '',
       nome_arquivo_foto_capa: localImages.capa?.name || '',
@@ -945,6 +980,23 @@ export default function MerchantCreatePage() {
                             return n;
                           });
                         }} 
+                      />
+                      <VideoUrlField
+                        value={localPortfolio?.url_video}
+                        onSave={async (url) => {
+                          if (merchantUuid) {
+                            const r = await updatePortfolioBasico({
+                              titulo: localPortfolio?.titulo,
+                              subtitulo: localPortfolio?.subtitulo,
+                              bio: localPortfolio?.bio,
+                              url_video: url,
+                              id_loja: merchantUuid
+                            });
+                            if (!r.success) return r.error ?? "Não foi possível salvar o vídeo.";
+                          }
+                          setLocalPortfolio(prev => prev ? ({ ...prev, url_video: url }) : null);
+                          return null;
+                        }}
                       />
                     </div>
                   </div>
@@ -1400,7 +1452,7 @@ export default function MerchantCreatePage() {
                     </div>
                   )}
                   <Button 
-                    onClick={() => window.open(`https://${createdSlug || localAccount?.slug}.guiatour.online`, '_blank')}
+                    onClick={() => window.open(`https://guiatour.online/loja/${encodeURIComponent(createdSlug || localAccount?.slug || "")}`, '_blank', 'noopener,noreferrer')}
                     className="w-full h-12 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
                   >
                     <ExternalLink className="h-5 w-5" />

@@ -22,7 +22,7 @@ export function AppLayout() {
     }
   }, [loadAccount, account]);
 
-  const publicUrl = account?.slug ? `https://${account.slug}.guiatour.online` : "#";
+  const publicUrl = account?.slug ? `https://guiatour.online/loja/${encodeURIComponent(account.slug)}` : "#";
 
   return (
     <div className="h-screen bg-slate-50 bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-100 flex flex-col relative overflow-hidden text-slate-900">

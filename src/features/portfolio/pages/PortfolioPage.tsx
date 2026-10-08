@@ -32,6 +32,7 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import { VideoUrlField } from "@/components/VideoUrlField";
 
 import {
     Dialog,
@@ -675,6 +676,13 @@ export function PortfolioPage() {
                                     <EditableField label="Título" value={portfolio?.titulo} maxLength={100} onSave={(val) => updatePortfolioBasico({ titulo: val, subtitulo: portfolio?.subtitulo, bio: portfolio?.bio, id_loja: userId || undefined })} />
                                     <EditableField label="Subtítulo" value={portfolio?.subtitulo} maxLength={500} onSave={(val) => updatePortfolioBasico({ titulo: portfolio?.titulo, subtitulo: val, bio: portfolio?.bio, id_loja: userId || undefined })} />
                                     <EditableField label="Bio" value={portfolio?.bio} multiline onSave={(val) => updatePortfolioBasico({ titulo: portfolio?.titulo, subtitulo: portfolio?.subtitulo, bio: val, id_loja: userId || undefined })} />
+                                    <VideoUrlField
+                                        value={portfolio?.url_video}
+                                        onSave={async (url) => {
+                                            const r = await updatePortfolioBasico({ titulo: portfolio?.titulo, subtitulo: portfolio?.subtitulo, bio: portfolio?.bio, url_video: url, id_loja: userId || undefined });
+                                            return r.success ? null : (r.error ?? "Não foi possível salvar o vídeo.");
+                                        }}
+                                    />
                                 </div>
                             </div>
                         </AccordionContent>
@@ -936,7 +944,7 @@ export function PortfolioPage() {
                 <div className="sticky bottom-4 mt-8 px-2 z-10">
                     <Button
                         disabled={!isFullyComplete}
-                        onClick={() => window.open(`https://${account?.slug}.guiatour.online`, '_blank')}
+                        onClick={() => window.open(`https://guiatour.online/loja/${encodeURIComponent(account?.slug ?? "")}`, '_blank', 'noopener,noreferrer')}
                         className={cn(
                             "w-full h-[56px] rounded-2xl font-bold text-base transition-all shadow-xl",
                             isFullyComplete

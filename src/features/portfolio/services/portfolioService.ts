@@ -8,47 +8,13 @@ import type { Depoimento } from '../types';
  */
 class PortfolioService {
     /**
-     * Limpa a URL removendo o domínio e barras redundantes.
-     * @param url URL original retornada pela API ou vinda de inputs.
-     * @returns URL normalizada para armazenamento ou exibição.
-     */
-    private cleanUrl(url: string): string {
-        if (!url) return "";
-        try {
-            if (url.startsWith("http")) {
-                return new URL(url).pathname;
-            }
-        } catch {
-            // fallback
-        }
-        return url.replace(/^https?:\/\/[^\/]+/, "").replace(/\/\//g, "/") || "";
-    }
-
-    /**
      * Busca os dados completos do portfólio do lojista autenticado.
      * @param id Opcional: ID da loja para vendedores gerenciarem.
      * @returns Promessa com os dados do portfólio.
      */
     async getPortfolioData(id?: string): Promise<PortfolioData> {
-        const url = id && id !== 'me' ? `portfolio/info?id_loja=${id}` : 'portfolio/info';
+        const url = id && id !== 'me' ? `portfolio/info?id_loja=${encodeURIComponent(id)}` : 'portfolio/info';
         const response = await api.get(url);
-        return response.data;
-    }
-
-    /**
-     * Atualiza as informações gerais do portfólio.
-     * @param payload Objeto contendo os campos parciais a serem atualizados.
-     */
-    async updatePortfolio(payload: Partial<PortfolioData>): Promise<any> {
-        const idLoja = localStorage.getItem("id_loja") || "";
-        const cleanedPayload = {
-            ...payload,
-            id_loja: idLoja,
-            avatar: this.cleanUrl(payload.avatar || ""),
-            foto_bio: this.cleanUrl(payload.foto_bio || ""),
-            foto_capa: this.cleanUrl(payload.foto_capa || ""),
-        };
-        const response = await api.post('portfolio/update', cleanedPayload);
         return response.data;
     }
 
@@ -56,12 +22,14 @@ class PortfolioService {
      * Atualiza informações básicas do portfólio (título, subtítulo e bio).
      * @param data Objeto com os campos de texto básicos e id_loja opcional.
      */
-    async updatePortfolioBasico(data: { titulo?: string; subtitulo?: string; bio?: string; id_loja?: string }): Promise<any> {
+    async updatePortfolioBasico(data: { titulo?: string; subtitulo?: string; bio?: string; url_video?: string; id_loja?: string }): Promise<any> {
         const id = data.id_loja || localStorage.getItem("id_loja") || undefined;
         const payload = {
             titulo: data.titulo ?? "",
             subtitulo: data.subtitulo ?? "",
             bio: data.bio ?? "",
+            // só envia o vídeo quando ele é a alteração: sem o campo, o backend mantém o vídeo salvo
+            ...(data.url_video !== undefined && { url_video: data.url_video }),
             id_loja: id,
             uuid: id
         };

@@ -11,19 +11,12 @@ class AccountService {
      * @param id Opcional: ID da loja para vendedores gerenciarem.
      */
     async getAccountData(id?: string): Promise<AccountData> {
-        const url = id && id !== 'me' ? `account/get_data?id_loja=${id}` : 'account/get_data';
+        const url = id && id !== 'me' ? `account/get_data?id_loja=${encodeURIComponent(id)}` : 'account/get_data';
         const response = await api.get(url);
         return response.data;
     }
 
-    /**
-     * Atualiza informações gerais da conta.
-     * @param data Dados parciais da conta.
-     */
-    async updateAccount(data: Partial<AccountData>): Promise<any> {
-        const response = await api.post('account/update', data);
-        return response.data;
-    }
+
 
     /**
      * Atualiza dados básicos do perfil (nome e apelido).
@@ -158,14 +151,7 @@ class AccountService {
         return response.data;
     }
 
-    /**
-     * Registra uma nova conta de usuário.
-     * @param data Dados de registro.
-     */
-    async registerAccount(data: any): Promise<any> {
-        const response = await api.post('account/register', data);
-        return response.data;
-    }
+
 
     /**
      * Busca informações de endereço a partir de um CEP.
@@ -184,7 +170,7 @@ class AccountService {
      * @param slug Slug a ser verificado.
      */
     async checkSlug(slug: string): Promise<{ slug: boolean; id_loja: string }> {
-        const response = await api.get(`account/get_slug/${slug}`);
+        const response = await api.get(`account/get_slug/${encodeURIComponent(slug)}`);
         return response.data;
     }
 }

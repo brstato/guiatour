@@ -42,6 +42,7 @@ export interface CreateMerchantDTO {
   id_categoria: number;
   latitude: string;
   longitude: string;
+  url_video?: string;
 }
 
 export interface VendorMerchant {
@@ -96,6 +97,7 @@ export interface TouristSpot {
   categoria_nome: string;
   categoria_slug: string;
   galeria: TouristSpotGalleryItem[];
+  url_video?: string;
 }
 
 export interface SaveTouristSpotDTO {
@@ -114,4 +116,5 @@ export interface SaveTouristSpotDTO {
   nome_arquivo_capa: string;
   capa: string;
   galeria: Array<{ nome_arquivo: string; itemFoto: string }>;
+  url_video?: string;
 }

@@ -41,6 +41,10 @@ const router = createBrowserRouter([
         path: "pontos/novo",
         element: <TouristSpotFormPage />,
       },
+      {
+        path: "pontos/:uuid",
+        element: <TouristSpotFormPage />,
+      },
     ],
   },
   {

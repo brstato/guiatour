@@ -43,21 +43,7 @@ export function useAccountController() {
         }
     }, [loadCategorias]);
 
-    /**
-     * Lida com a atualização genérica de campos da conta.
-     * @param updateData Campos parciais a atualizar.
-     */
-    const handleUpdate = async (updateData: Partial<AccountData>) => {
-        setData(prev => prev ? { ...prev, ...updateData } : null);
-        setError(null);
-        try {
-            await accountService.updateAccount(updateData);
-        } catch (err) {
-            console.error("Erro ao atualizar conta:", err);
-            setError("Erro ao atualizar dados da conta.");
-            await loadData();
-        }
-    };
+
 
     /**
      * Atualiza dados básicos do perfil (nome, apelido e categoria).
@@ -204,7 +190,7 @@ export function useAccountController() {
         categorias,
         error,
         loadData,
-        handleUpdate,
+        loadCategorias,
         handleUpdateBasico,
         handleUpdateContato,
         handleUpdateEndereco,
