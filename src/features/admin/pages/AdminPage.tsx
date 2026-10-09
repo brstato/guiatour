@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowLeft,
+  BarChart3,
   CalendarClock,
   CreditCard,
   ExternalLink,
@@ -133,6 +134,7 @@ function LojaLinha({
   const local = [loja.cidade, loja.uf].filter(Boolean).join("/");
   const forma = loja.forma_pagamento ? FORMA_LABEL[loja.forma_pagamento] : "";
   const vencida = loja.situacao === "vencida";
+  const navigate = useNavigate();
 
   return (
     <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 transition-colors hover:bg-slate-100/80">
@@ -197,6 +199,17 @@ function LojaLinha({
               <span className="hidden sm:inline">Página</span>
             </a>
           )}
+
+          <Button
+            variant="outline"
+            onClick={() =>
+              navigate(`/vendedor/metricas/${encodeURIComponent(loja.uuid)}`, { state: { nome: loja.nome } })
+            }
+            className="gap-1.5 font-bold text-slate-700"
+          >
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Métricas</span>
+          </Button>
 
           <Button
             variant="outline"
@@ -361,15 +374,25 @@ function AdminConteudo() {
                 Todas as lojas, pontos turísticos e mensalidades da rede, de todos os vendedores.
               </p>
             </div>
-            <Button
-              variant="outline"
-              onClick={reload}
-              disabled={isFetching}
-              className="h-11 gap-2 px-5 font-bold shadow-sm"
-            >
-              <RefreshCw className={cn("h-4 w-4", isFetching && "animate-spin")} />
-              Atualizar
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                variant="outline"
+                onClick={() => navigate("/vendedor/admin/metricas")}
+                className="h-11 gap-2 px-5 font-bold text-blue-600 shadow-sm"
+              >
+                <BarChart3 className="h-4 w-4" />
+                Métricas da rede
+              </Button>
+              <Button
+                variant="outline"
+                onClick={reload}
+                disabled={isFetching}
+                className="h-11 gap-2 px-5 font-bold shadow-sm"
+              >
+                <RefreshCw className={cn("h-4 w-4", isFetching && "animate-spin")} />
+                Atualizar
+              </Button>
+            </div>
           </div>
 
           {isLoading ? (

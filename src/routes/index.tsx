@@ -10,6 +10,8 @@ import MerchantCreatePage from "../features/vendor/pages/MerchantCreatePage";
 import TouristSpotFormPage from "../features/vendor/pages/TouristSpotFormPage";
 import VendorBillingPage from "../features/vendor/pages/VendorBillingPage";
 import { AdminPage } from "../features/admin/pages/AdminPage";
+import MetricasRedePage from "../features/vendor/pages/MetricasRedePage";
+import MetricasLojaPage from "../features/vendor/pages/MetricasLojaPage";
 import { BillingPage } from "../features/billing/pages/BillingPage";
 
 const router = createBrowserRouter([
@@ -36,6 +38,18 @@ const router = createBrowserRouter([
       {
         path: "admin",
         element: <AdminPage />,
+      },
+      {
+        path: "admin/metricas",
+        element: <MetricasRedePage escopo="admin" />,
+      },
+      {
+        path: "metricas",
+        element: <MetricasRedePage escopo="vendedor" />,
+      },
+      {
+        path: "metricas/:uuid",
+        element: <MetricasLojaPage />,
       },
       {
         path: "pontos/novo",

@@ -14,6 +14,29 @@ export interface MetricasResponse {
     pontos: { nome: string; slug: string; total: number }[];
 }
 
+/** Uma loja no ranking das métricas somadas. */
+export interface LojaRanking {
+    uuid: string;
+    nome: string;
+    slug: string;
+    /** Todas as interações no período. */
+    total: number;
+    visitas: number;
+    whats: number;
+    rotas: number;
+}
+
+/** Métricas somadas de várias lojas (GET vendedor/metricas e GET admin/metricas). */
+export interface MetricasRedeResponse extends MetricasResponse {
+    /** Quantas lojas entram na soma. */
+    total_lojas: number;
+    /** As 10 lojas com mais interações no período. */
+    lojas: LojaRanking[];
+}
+
+/** "vendedor" = só as lojas do vendedor logado; "admin" = a rede inteira (só administrador). */
+export type EscopoRede = "vendedor" | "admin";
+
 export const PERIODOS_METRICAS = [7, 30, 90] as const;
 
 /**
@@ -31,6 +54,26 @@ export function useMetricas(lojaId: string | undefined, dias: number) {
             return response.data;
         },
         enabled: !!id,
+        staleTime: 1000 * 60 * 5, // 5 min
+        placeholderData: keepPreviousData,
+    });
+}
+
+/**
+ * Métricas somadas de várias lojas.
+ * @param escopo "vendedor" soma as lojas do vendedor logado; "admin" soma a rede inteira.
+ * @param dias Período: 7, 30 ou 90 dias, contando hoje.
+ * @param habilitado false adia a consulta (ex.: enquanto ainda se confirma que é administrador).
+ */
+export function useMetricasRede(escopo: EscopoRede, dias: number, habilitado = true) {
+    return useQuery<MetricasRedeResponse>({
+        queryKey: ["metricas-rede", escopo, dias],
+        queryFn: async () => {
+            const rota = escopo === "admin" ? "admin/metricas" : "vendedor/metricas";
+            const response = await api.get(rota, { params: { dias } });
+            return response.data;
+        },
+        enabled: habilitado,
         staleTime: 1000 * 60 * 5, // 5 min
         placeholderData: keepPreviousData,
     });

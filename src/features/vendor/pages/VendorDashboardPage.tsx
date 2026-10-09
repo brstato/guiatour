@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Plus, Search, Loader2, MapPin, CreditCard, Shield } from "lucide-react";
+import { Plus, Search, Loader2, MapPin, CreditCard, Shield, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -76,6 +76,14 @@ export default function VendorDashboardPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/vendedor/metricas')}
+                className="gap-2 text-slate-700 border-slate-200 hover:bg-slate-50 font-bold h-11 px-6 shadow-sm"
+              >
+                <BarChart3 className="h-4.5 w-4.5" />
+                Minhas métricas
+              </Button>
               {isAdm && (
                 <Button 
                   variant="outline"
@@ -146,6 +154,14 @@ export default function VendorDashboardPage() {
                         >
                           <CreditCard className="w-4 h-4 text-slate-500" />
                           <span className="hidden sm:inline">Cobrança</span>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => navigate(`/vendedor/metricas/${encodeURIComponent(item.uuid)}`, { state: { nome: item.nome } })}
+                          className="bg-white text-slate-700 border-slate-200 hover:bg-slate-50 font-bold shrink-0 shadow-sm gap-1.5"
+                        >
+                          <BarChart3 className="w-4 h-4 text-slate-500" />
+                          <span className="hidden sm:inline">Métricas</span>
                         </Button>
                         <Button 
                           variant="outline"
